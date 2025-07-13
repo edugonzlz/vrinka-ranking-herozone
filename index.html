@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Ranking VRINKA – Últimos 30 días</title>
+
+<!-- Google Font Oxanium -->
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --c-principal:#FF007F;  /* magenta VRINKA */
+    --c-secundario:#007BFF;
+    --c-terciario:#9B00FF;
+    --c-dark:#2C2C2C;
+    --c-hi1:#97D700;
+    --c-hi2:#FFDD00;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Oxanium',Arial,Helvetica,sans-serif;}
+  body{
+    background:var(--c-dark);
+    color:#fff;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .frame{
+    width:92vw;
+    max-width:1440px;
+    height:96vh;
+    display:flex;
+    flex-direction:column;
+    gap:1vh;
+    padding:2vh 0;
+    text-align:center;
+    position: relative;
+  }
+  h1{
+    text-transform:uppercase;
+    font-size:2.8vw;
+    line-height:1.15;
+    margin-bottom:0.5vh;
+    color:var(--c-principal);
+    letter-spacing:0.08em;
+    text-shadow:0 0 8px var(--c-terciario);
+  }
+  #progress {
+  height: 0.8vh;
+  width: 84vw;               /* ancho fijo: 92 vw − (4 vw×2)  */
+  background: var(--c-principal);
+  transition: width linear;
+  box-shadow: 0 0 6px var(--c-principal);
+  position: absolute;
+  top: 10vh;
+  left: 0;
+transform:none;
+width: 92vw;   /* o 100% */
+  z-index: 5;
+}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:2vw;
+    flex-grow:1;
+  }
+  th,td{padding:0.8vh 0.5vw;}
+  th{
+    font-size:2.1vw;
+    font-weight:700;
+    border-bottom:0.45vh solid var(--c-principal);
+    height:6vh;               /* altura fija cabecera */
+  }
+  tr:nth-child(even){background:#222;}
+  .highlight{
+    background:var(--c-principal) !important;
+    color:#000 !important;
+    font-weight:700;
+  }
+  /* Alinear título de la columna Equipo a la izquierda */
+  th:nth-child(2){
+    text-align:left;
+    padding-left:1vw;
+  }
+  /* Alinear nombre de equipo a la izquierda */
+  td:nth-child(2){
+    text-align:left;
+    padding-left:1vw;
+  }
+  .medal{font-size:2.2vw;}
+  .footer{font-size:1.8vw;color:var(--c-hi2);margin-top:1vh;}
+  .footer button{
+    font-size:1.8vw;
+    background:transparent;
+    border:0.2vw solid var(--c-principal);
+    color:var(--c-hi2);
+    border-radius:0.4vw;
+    padding:0.2vw 0.8vw;
+    cursor:pointer;
+    margin:0 0.4vw;
+  }
+  .footer button:hover{
+    background:var(--c-principal);
+    color:#000;
+  }
+  /* Estilo para el botón cargar */
+  #btnLoad{
+    font-size:1.8vw;
+    background:transparent;
+    border:0.2vw solid var(--c-principal);
+    color:var(--c-hi2);
+    border-radius:0.4vw;
+    padding:0.2vw 0.8vw;
+    cursor:pointer;
+    margin:0 0.4vw;
+  }
+  #btnLoad:hover{
+    background:var(--c-principal);
+    color:#000;
+  }
+  /* Altura fija de las filas para dar cabida siempre a 10 — ajusta 8vh si ves huecos */
+tbody tr {
+  height: 7vh;
+}
+table {
+  overflow: hidden;
+}
+
+table{
+  overflow:hidden;
+  max-height:80vh;            /* impide que tape la barra y el footer */
+}
+#dateSelect {
+    background: #000;
+    color: var(--c-hi2);
+    border: 0.2vw solid var(--c-principal);
+    border-radius: 0.4vw;
+    padding: 0.2vw 0.4vw;
+    margin-left: 0.4vw;
+  }
+</style>
+</head>
+
+<body>
+<div class="frame">
+  <h1 id="title">Cargando…</h1>
+  <div id="progress"></div>
+  <table id="ranking"></table>
+  <div class="footer">
+    <select id="dateSelect" style="font-size:1.5vw;">
+      <option value="all">Absoluto</option>
+      <option value="last30" selected>Últimos 30 días</option>
+    </select>
+
+    <label style="margin-left:1vw; font-size:1.5vw;">
+      <input type="checkbox" id="chkHighlight" checked>
+      Marcar última partida
+    </label>
+
+    <button id="btnPlayPause">⏸</button>
+    <button id="btnNext">▶▶</button>
+
+    <input type="file" id="fileLoader" accept=".json" style="display:none;">
+    <button id="btnLoad">Cargar datos</button>
+  </div>
+</div>
+
+<!-- ===== Script ES5 compatible ===== -->
+<script>
+var loopId = null;
+var isPlaying = true;
+var startTime = 0;     // timestamp when progress started
+var pausedAt  = 0;     // ms elapsed when paused
+var CYCLE_SECONDS = 25;
+var NOW = new Date();
+var MS_30D = 30 * 24 * 60 * 60 * 1000;
+
+var currentRaw = [];
+var dateSelector = document.getElementById('dateSelect');
+var highlightLast = true;
+var chkHighlight  = document.getElementById('chkHighlight');
+
+  (function fillMonths(){
+    var now = new Date();
+    for(var i=0;i<12;i++){
+      var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      var val = d.toISOString().slice(0,7);
+      var txt = d.toLocaleString('es-ES',{month:'long',year:'numeric'});
+      var opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = txt.charAt(0).toUpperCase()+txt.slice(1);
+      dateSelector.appendChild(opt);
+    }
+  })();
+
+  (function fillYears(){
+    var startYear = 2024;
+    var currentYear = new Date().getFullYear();
+    for(var y = currentYear; y >= startYear; y--){
+      var opt = document.createElement('option');
+      opt.value = 'year-' + y;      // e.g., year-2025
+      opt.textContent = y.toString();
+      dateSelector.appendChild(opt);
+    }
+  })();
+
+function inRange(dateObj){
+    var sel = dateSelector.value;
+
+    if(sel === 'all'){                 // sin filtro: todos los datos
+      return true;
+    }
+    if(sel === 'last30'){              // últimos 30 días
+      return (NOW - dateObj) <= MS_30D;
+    }
+    if(sel.startsWith('year-')){       // filtro por año completo
+      var yearSel = parseInt(sel.split('-')[1], 10);
+      return dateObj.getFullYear() === yearSel;
+    }
+    // filtro por mes YYYY-MM (opciones añadidas por fillMonths)
+    return dateObj.toISOString().slice(0,7) === sel;
+  }
+
+function parseJSONDate(str){
+  return new Date(str.replace(' ', 'T'));
+}
+function daysAgo(date){
+  return NOW - date;
+}
+
+/* Re-filtra y agrupa los datos según dateSelect */
+function rebuildByGame(){
+  var byGame = {};
+  currentRaw.forEach(function(r){
+    var d = parseJSONDate(r.date);
+    if(!inRange(d)) return;          // aplica filtro
+    var gName = r.game && r.game.trim() ? r.game : '?';
+    if(!byGame[gName]) byGame[gName] = [];
+    byGame[gName].push(r);
+  });
+  Object.keys(byGame).forEach(function(g){
+    byGame[g].sort(function(a,b){ return b.score - a.score; });
+  });
+  initCarousel(byGame);
+}
+
+fetch('HZ%20scores.json')
+  .then(function(r){ return r.json(); })
+  .then(function(raw){
+    currentRaw = raw;
+    rebuildByGame();
+  });
+
+var rankingEl = document.getElementById('ranking');
+var titleEl   = document.getElementById('title');
+var progress  = document.getElementById('progress');
+var games     = [];
+var idx       = 0;
+
+/* ==== PROGRESS BAR ANIMATION ==== */
+function animateProgress(fromMs){
+  var dur   = CYCLE_SECONDS * 1000;
+  var start = performance.now() - fromMs;
+  startTime = start;
+
+  function frame(now){
+    var elapsed = now - start;
+    var pct = Math.min(elapsed / dur, 1);
+    progress.style.width = (pct * 100) + '%';
+    if(pct < 1){
+      progress._raf = requestAnimationFrame(frame);
+    }
+  }
+  cancelAnimationFrame(progress._raf || 0);
+  requestAnimationFrame(frame);
+}
+function nextGame(){
+  idx = (idx + 1) % games.length;
+  render();
+  progress.style.width = '0';
+  animateProgress(0);
+}
+/* ================================= */
+
+function initCarousel(obj){
+  games = Object.keys(obj).map(function(k){ return [k, obj[k]]; });
+  if(!games.length){
+    rankingEl.innerHTML =
+      '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
+    titleEl.textContent = 'SIN DATOS RECIENTES';
+    return;
+  }
+  render();
+  idx = 0;
+  startLoop();
+}
+
+function render(){
+  var pair = games[idx];
+  var game = pair[0];
+  var rows = pair[1];
+
+  if(!rows.length){
+    rankingEl.innerHTML =
+      '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
+    return;
+  }
+
+  titleEl.textContent = game.toUpperCase();
+
+  /* partida más reciente registrada para ese juego */
+  var lastRecent = null;
+  for(var i=0;i<rows.length;i++){
+    if(!lastRecent || new Date(rows[i].date) > new Date(lastRecent.date)){
+      lastRecent = rows[i];
+    }
+  }
+
+  var top10 = rows.slice(0, 10);
+
+  if (highlightLast && lastRecent && top10.indexOf(lastRecent) === -1) {
+    top10.pop();              // elimina el puesto 10 actual
+    top10.push(lastRecent);   // añade la última partida
+  }
+
+  /* construir tabla: siempre 10 filas */
+  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
+
+  for (var rowIdx = 0; rowIdx < 10; rowIdx++) {
+    var r = (rowIdx < top10.length) ? top10[rowIdx] : null;
+    var posReal = rows.indexOf(r) + 1;
+    var showPos = (highlightLast && (r === lastRecent) && posReal > 10)
+                  ? posReal
+                  : (rowIdx + 1);
+
+    var medal = (showPos===1)?'🥇'
+             : (showPos===2)?'🥈'
+             : (showPos===3)?'🥉'
+             : showPos;
+    if (r) {
+      var isCurrent = highlightLast && (r === lastRecent);
+      html += '<tr class="' + (isCurrent ? 'highlight' : '') + '"><td class="medal">' + medal + '</td>' +
+              '<td>' + r.teamName + '</td>' +
+              '<td>' + r.score.toLocaleString("es-ES") + '</td>' +
+              '<td>' + r.date.slice(8,10) + '-' + r.date.slice(5,7) + '</td></tr>';
+    } else {
+      html += '<tr><td class="medal">' + medal + '</td><td></td><td></td><td></td></tr>';
+    }
+  }
+  rankingEl.innerHTML = html;
+
+}
+
+function startLoop(){
+  stopLoop();                 // clear any existing loop
+  pausedAt = 0;
+  progress.style.width = '0';
+  animateProgress(0);
+  loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
+  isPlaying = true;
+  document.getElementById('btnPlayPause').textContent = '⏸';
+}
+
+function stopLoop(){
+  if(loopId){
+    clearInterval(loopId);
+    loopId = null;
+  }
+  isPlaying = false;
+  document.getElementById('btnPlayPause').textContent = '▶';
+  progress.style.transition = 'none';
+  progress.style.width = '100%';
+  cancelAnimationFrame(progress._raf || 0);
+  pausedAt = performance.now() - startTime;
+}
+</script>
+<script>
+document.getElementById('btnPlayPause').onclick = function(){
+  if(isPlaying){
+    stopLoop();
+  } else {
+    animateProgress(pausedAt);
+    loopId = setInterval(nextGame, CYCLE_SECONDS*1000 - pausedAt);
+    isPlaying = true;
+    this.textContent = '⏸';
+  }
+};
+document.getElementById('btnNext').onclick = function(){
+  nextGame();
+  if(isPlaying){
+    clearInterval(loopId);
+    loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
+  }
+};
+dateSelector.onchange = function(){
+  rebuildByGame();
+};
+chkHighlight.onchange = function(){
+  highlightLast = this.checked;
+  render();
+};
+
+// --- Cargar JSON desde archivo local ---
+var fileInput = document.getElementById('fileLoader');
+document.getElementById('btnLoad').onclick = function(){
+  fileInput.click();              // abre diálogo
+};
+fileInput.onchange = function(evt){
+  var file = evt.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data = JSON.parse(e.target.result);
+      currentRaw = data;
+      rebuildByGame();
+    }catch(err){
+      alert("JSON inválido");
+    }
+  };
+  reader.readAsText(file, "utf-8");
+  // limpia para poder volver a seleccionar el mismo archivo después
+  this.value = '';
+};
+// ----------------------------------------
+</script>
+</body>
+</html>
