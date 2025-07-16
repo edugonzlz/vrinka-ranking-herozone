@@ -24,18 +24,19 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    overflow:hidden;
+    overflow-y:auto;
   }
   .frame{
     width:92vw;
     max-width:1440px;
-    height:96vh;
+    min-height:96vh;
     display:flex;
     flex-direction:column;
     gap:1vh;
     padding:2vh 0;
     text-align:center;
     position: relative;
+    padding-bottom:4vh;
   }
   h1{
     text-transform:uppercase;
@@ -46,19 +47,6 @@
     letter-spacing:0.08em;
     text-shadow:0 0 8px var(--c-terciario);
   }
-  #progress {
-  height: 0.8vh;
-  width: 84vw;               /* ancho fijo: 92 vw − (4 vw×2)  */
-  background: var(--c-principal);
-  transition: width linear;
-  box-shadow: 0 0 6px var(--c-principal);
-  position: absolute;
-  top: 10vh;
-  left: 0;
-transform:none;
-width: 92vw;   /* o 100% */
-  z-index: 5;
-}
   table{
     width:100%;
     border-collapse:collapse;
@@ -144,26 +132,77 @@ table{
 
 <body>
 <div class="frame">
-  <h1 id="title">Cargando…</h1>
-  <div id="progress"></div>
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 1vw;">
+    <div style="flex:1; display: flex; justify-content: flex-start;">
+      <img src="logo_vrinka.svg" alt="VRINKA Logo" style="height: 6vh;">
+    </div>
+    <div style="flex:1; display: flex; justify-content: center; align-items: center;">
+      <h1 id="title" style="margin: 0; text-align: center;">Cargando…</h1>
+    </div>
+    <div style="flex:1; display: flex; justify-content: flex-end; align-items: center; gap: 1vw;">
+      <div style="position: relative; width: 6vh; height: 6vh;">
+        <svg id="circleProgress" width="6vh" height="6vh" viewBox="0 0 36 36" style="position: absolute; top: 0; left: 0;">
+          <path
+            stroke="#FF007F"
+            stroke-width="3"
+            fill="none"
+            stroke-linecap="round"
+            d="M18 2.0845
+               a 15.9155 15.9155 0 0 1 0 31.831
+               a 15.9155 15.9155 0 0 1 0 -31.831"
+            stroke-dasharray="100, 100"
+            stroke-dashoffset="100"
+            id="circleStroke"
+          />
+        </svg>
+        <button id="btnPlayPause" style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 4vh;
+          height: 4vh;
+          border-radius: 50%;
+          font-size: 2vh;
+          background: transparent;
+          border: none;
+          color: #FF007F;
+          cursor: pointer;
+        ">⏸</button>
+      </div>
+      <button id="btnNext" style="
+        width: 4vh;
+        height: 4vh;
+        font-size: 2vh;
+        background: transparent;
+        border: none;
+        color: #FF007F;
+        cursor: pointer;
+      ">▶▶</button>
+    </div>
+  </div>
   <table id="ranking"></table>
   <div class="footer">
+  <div style="margin-bottom: 1vh;">
     <select id="dateSelect" style="font-size:1.5vw;">
       <option value="all">Absoluto</option>
       <option value="last30" selected>Últimos 30 días</option>
     </select>
-
     <label style="margin-left:1vw; font-size:1.5vw;">
+      Buscar equipo:
+      <input type="text" id="teamSearch" style="font-size:1.5vw; padding: 0.2vw;">
+    </label>
+    <button id="btnSearch" style="font-size:1.5vw;">Buscar</button>
+  </div>
+  <div>
+    <label style="margin-left:0; font-size:1.5vw;">
       <input type="checkbox" id="chkHighlight" checked>
       Marcar última partida
     </label>
-
-    <button id="btnPlayPause">⏸</button>
-    <button id="btnNext">▶▶</button>
-
     <input type="file" id="fileLoader" accept=".json" style="display:none;">
     <button id="btnLoad">Cargar datos</button>
   </div>
+</div>
 </div>
 
 <!-- ===== Script ES5 compatible ===== -->
@@ -180,6 +219,12 @@ var currentRaw = [];
 var dateSelector = document.getElementById('dateSelect');
 var highlightLast = true;
 var chkHighlight  = document.getElementById('chkHighlight');
+
+document.getElementById('teamSearch').addEventListener('input', function(e){
+  if (isPlaying) {
+    stopLoop();
+  }
+});
 
   (function fillMonths(){
     var now = new Date();
@@ -233,9 +278,10 @@ function daysAgo(date){
 function rebuildByGame(){
   var byGame = {};
   currentRaw.forEach(function(r){
+    if (!r.game || !r.game.trim()) return;
+    var gName = r.game.trim();
     var d = parseJSONDate(r.date);
     if(!inRange(d)) return;          // aplica filtro
-    var gName = r.game && r.game.trim() ? r.game : '?';
     if(!byGame[gName]) byGame[gName] = [];
     byGame[gName].push(r);
   });
@@ -245,40 +291,45 @@ function rebuildByGame(){
   initCarousel(byGame);
 }
 
-fetch('HZ%20scores.json')
+fetch('hz-scores.json')
   .then(function(r){ return r.json(); })
   .then(function(raw){
     currentRaw = raw;
     rebuildByGame();
+  })
+  .catch(function(err){
+    console.error("Error cargando JSON por defecto:", err);
   });
 
 var rankingEl = document.getElementById('ranking');
 var titleEl   = document.getElementById('title');
-var progress  = document.getElementById('progress');
+// var progress = document.getElementById('progress');
 var games     = [];
 var idx       = 0;
 
 /* ==== PROGRESS BAR ANIMATION ==== */
 function animateProgress(fromMs){
-  var dur   = CYCLE_SECONDS * 1000;
+  var dur = CYCLE_SECONDS * 1000;
   var start = performance.now() - fromMs;
   startTime = start;
 
   function frame(now){
     var elapsed = now - start;
     var pct = Math.min(elapsed / dur, 1);
-    progress.style.width = (pct * 100) + '%';
-    if(pct < 1){
-      progress._raf = requestAnimationFrame(frame);
+    // progress.style.width = (pct * 100) + '%';
+    var stroke = document.getElementById('circleStroke');
+    stroke.setAttribute('stroke-dashoffset', 100 - pct * 100);
+    if (pct < 1){
+      stroke._raf = requestAnimationFrame(frame);
     }
   }
-  cancelAnimationFrame(progress._raf || 0);
+
+  cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
   requestAnimationFrame(frame);
 }
 function nextGame(){
   idx = (idx + 1) % games.length;
   render();
-  progress.style.width = '0';
   animateProgress(0);
 }
 /* ================================= */
@@ -355,7 +406,7 @@ function render(){
 function startLoop(){
   stopLoop();                 // clear any existing loop
   pausedAt = 0;
-  progress.style.width = '0';
+  // progress.style.width = '0';
   animateProgress(0);
   loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
   isPlaying = true;
@@ -369,9 +420,8 @@ function stopLoop(){
   }
   isPlaying = false;
   document.getElementById('btnPlayPause').textContent = '▶';
-  progress.style.transition = 'none';
-  progress.style.width = '100%';
-  cancelAnimationFrame(progress._raf || 0);
+  cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
+  // progress.style.width = '100%';
   pausedAt = performance.now() - startTime;
 }
 </script>
@@ -424,6 +474,55 @@ fileInput.onchange = function(evt){
   this.value = '';
 };
 // ----------------------------------------
+
+document.getElementById('btnSearch').onclick = function(){
+  stopLoop(); // pausa la rotación
+
+  var input = document.getElementById('teamSearch').value.trim();
+  var inputLower = input.toLowerCase();
+  if(!input){
+    alert("Introduce un nombre de equipo.");
+    return;
+  }
+
+  var result = [];
+  games.forEach(function(pair){
+    var game = pair[0];
+    var rows = pair[1];
+    for(var i = 0; i < rows.length; i++){
+      if(rows[i].teamName.trim().toLowerCase() === inputLower){
+        result.push(game + ': ' + (i + 1));
+        break;
+      }
+    }
+  });
+
+  if(result.length){
+    const title = `Posición del equipo "${input}"`;
+    const body = result.map(r => `<div>${r}</div>`).join('');
+    const popup = document.createElement('div');
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.background = '#000';
+    popup.style.border = '2px solid #FF007F';
+    popup.style.color = '#FFDD00';
+    popup.style.padding = '2vh 4vw';
+    popup.style.fontSize = '2vw';
+    popup.style.textAlign = 'center';
+    popup.style.zIndex = 9999;
+    popup.style.boxShadow = '0 0 1vw #FF007F';
+    popup.style.borderRadius = '1vw';
+    popup.innerHTML = `<div style="margin-bottom:1vh;font-weight:bold;">${title}</div>${body}<div style="margin-top:2vh;"><button id="popupClose" style="font-size:1.5vw;padding:0.5vh 2vw;border:none;border-radius:0.5vw;background:#FF007F;color:#000;cursor:pointer;">Cerrar</button></div>`;
+    document.body.appendChild(popup);
+    document.getElementById('popupClose').onclick = function(){
+      popup.remove();
+    };
+  } else {
+    alert(`No se ha encontrado el equipo "${input}" en ningún juego.`);
+  }
+};
 </script>
 </body>
 </html>

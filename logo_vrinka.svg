@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_2" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 191.33 27.59">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ff007f;
+      }
+
+      .cls-2 {
+        fill: url(#Degradado_tricolor_VRINKA_RGB);
+      }
+    </style>
+    <linearGradient id="Degradado_tricolor_VRINKA_RGB" data-name="Degradado tricolor VRINKA RGB" x1="59.24" y1="13.79" x2="191.33" y2="13.79" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff007f"/>
+      <stop offset=".5" stop-color="#9b00ff"/>
+      <stop offset="1" stop-color="#007bff"/>
+    </linearGradient>
+  </defs>
+  <g id="Capa_1-2" data-name="Capa 1">
+    <g>
+      <path class="cls-1" d="M18.4,17.24h-6.9v-6.9h6.9v6.9ZM36.79,10.34h-6.9v6.9h6.9v-6.9ZM48.28,27.59v-10.34h-4.6v5.75s-39.08,0-39.08,0v-5.75s-4.6,0-4.6,0v10.34s48.28,0,48.28,0ZM48.28,0v10.34s-4.6,0-4.6,0v-5.75s-39.08,0-39.08,0v5.75s-4.6,0-4.6,0V0s48.28,0,48.28,0Z"/>
+      <path class="cls-2" d="M59.24,4.6h4.6l5.17,9.77,5.17-9.77h4.6l-9.77,18.97-9.77-18.97ZM181.56,4.02l-9.77,18.97h4.6s5.17-9.77,5.17-9.77l5.17,9.77h4.6s-9.77-18.97-9.77-18.97ZM85.23,4.6v18.39h4.6v-13.79h11.49s0-4.6,0-4.6h-16.09ZM167.08,4.6h-4.6l-3.45,6.9h-5.75s0-6.9,0-6.9h-4.6v18.39h4.6v-6.9h5.75s3.45,6.9,3.45,6.9h4.6s-4.6-9.19-4.6-9.19l4.6-9.2ZM121.1,4.6v18.39h4.6v-13.79s9.19,0,9.19,0v13.79h4.6V4.6h-18.39ZM111.91,4.6h-4.6v18.39h4.6V4.6Z"/>
+    </g>
+  </g>
+</svg>
