@@ -295,30 +295,13 @@ table{
             id="circleStroke"
           />
         </svg>
-        <button id="btnPlayPause" style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: 4vh;
-          height: 4vh;
-          border-radius: 50%;
-          font-size: 2vh;
-          background: transparent;
-          border: none;
-          color: #FF007F;
-          cursor: pointer;
-        ">⏸</button>
+        <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar" style="position:absolute; top:0; left:0; width:100%; height:100%;">
+          <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" style="height: 4vh; width: auto;" />
+        </button>
       </div>
-      <button id="btnNext" style="
-        width: 4vh;
-        height: 4vh;
-        font-size: 2vh;
-        background: transparent;
-        border: none;
-        color: #FF007F;
-        cursor: pointer;
-      ">▶▶</button>
+      <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
+        <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
+      </button>
     </div>
   </div>
   <table id="ranking"></table>
@@ -530,7 +513,8 @@ function startLoop(){
   animateProgress(0);
   loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
   isPlaying = true;
-  document.getElementById('btnPlayPause').textContent = '⏸';
+  document.getElementById('playPauseIcon').src = 'icon_pause.png';
+  document.getElementById('playPauseIcon').alt = 'Pausa';
 }
 
 function stopLoop(){
@@ -539,7 +523,8 @@ function stopLoop(){
     loopId = null;
   }
   isPlaying = false;
-  document.getElementById('btnPlayPause').textContent = '▶';
+  document.getElementById('playPauseIcon').src = 'icon_play.png';
+  document.getElementById('playPauseIcon').alt = 'Reanudar';
   cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
   // progress.style.width = '100%';
   pausedAt = performance.now() - startTime;
@@ -585,7 +570,8 @@ document.getElementById('btnPlayPause').onclick = function(){
     animateProgress(pausedAt);
     loopId = setInterval(nextGame, CYCLE_SECONDS*1000 - pausedAt);
     isPlaying = true;
-    this.textContent = '⏸';
+    document.getElementById('playPauseIcon').src = 'icon_pause.png';
+    document.getElementById('playPauseIcon').alt = 'Pausa';
   }
 };
 document.getElementById('btnNext').onclick = function(){
@@ -678,3 +664,17 @@ document.getElementById('btnSearch').onclick = function(){
 </script>
 </body>
 </html>
+  .control-icon {
+    height: 4vh;
+    object-fit: contain;
+  }
+</style>
+<style>
+.control-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 4vh;
+  height: 4vh;
+  padding: 0;
+}
