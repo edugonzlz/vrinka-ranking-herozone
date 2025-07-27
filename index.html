@@ -632,11 +632,14 @@ document.getElementById('btnSearch').onclick = function(){
   games.forEach(function(pair){
     var game = pair[0];
     var rows = pair[1];
-    for(var i = 0; i < rows.length; i++){
-      if(rows[i].teamName.trim().toLowerCase() === inputLower){
-        result.push(game + ': ' + (i + 1));
-        break;
+    var positions = [];
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].teamName.trim().toLowerCase() === inputLower) {
+        positions.push(i + 1);
       }
+    }
+    if (positions.length > 0) {
+      result.push(game + ': ' + positions.join(', '));
     }
   });
 
