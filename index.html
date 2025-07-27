@@ -38,7 +38,7 @@
   }
   h1{
     text-transform:uppercase;
-    font-size:2.8vw;
+    font-size:clamp(1.8rem, 2.8vw, 3.4rem);
     line-height:1.15;
     margin-bottom:0.5vh;
     color:var(--c-principal);
@@ -48,12 +48,12 @@
   table{
     width:100%;
     border-collapse:collapse;
-    font-size:2vw;
+    font-size:clamp(1rem, 2vw, 2.2rem);
     flex-grow:1;
   }
   th,td{padding:0.8vh 0.5vw;}
   th{
-    font-size:2.1vw;
+    font-size:clamp(1rem, 2.1vw, 2.3rem);
     font-weight:700;
     border-bottom:0.45vh solid var(--c-principal);
     height:6vh;               /* altura fija cabecera */
@@ -74,10 +74,10 @@
     text-align:left;
     padding-left:1vw;
   }
-  .medal{font-size:2.2vw;}
-  .footer{font-size:1.8vw;color:var(--c-hi2);margin-top:1vh;}
+  .medal{font-size:clamp(1.2rem, 2.2vw, 2.5rem);}
+  .footer{font-size:clamp(1rem, 1.8vw, 2rem);color:var(--c-hi2);margin-top:1vh;}
   .footer button{
-    font-size:1.8vw;
+    font-size:clamp(1rem, 1.8vw, 2rem);
     background:transparent;
     border:0.2vw solid var(--c-principal);
     color:var(--c-hi2);
@@ -92,7 +92,7 @@
   }
   /* Estilo para el botón cargar */
   #btnLoad{
-    font-size:1.8vw;
+    font-size:clamp(1rem, 1.8vw, 2rem);
     background:transparent;
     border:0.2vw solid var(--c-principal);
     color:var(--c-hi2);
@@ -124,7 +124,7 @@ table{
       border-radius: 0.4vw;
       padding: 0.2vw 0.4vw;
       margin-left: 0.4vw;
-      font-size: 1.8vw;
+      font-size: clamp(1rem, 1.8vw, 2rem);
       height: 2.8vw;
       font-weight: bold;
     }
@@ -137,7 +137,7 @@ table{
     border-radius: 0.4vw;
     padding: 0.2vw 0.8vw;
     margin-left: 0.4vw;
-    font-size: 1.8vw;
+    font-size: clamp(1rem, 1.8vw, 2rem);
   }
 
   #btnSearch:hover {
@@ -177,12 +177,12 @@ table{
     }
 
     h1 {
-      font-size: 6vw;
+      font-size: clamp(2.5rem, 6vw, 7rem);
     }
 
     table {
       width: 100%;
-      font-size: 4.5vw;
+      font-size: clamp(1.5rem, 4.5vw, 5.2rem);
       table-layout: fixed;
     }
     th:nth-child(1), td:nth-child(1) {
@@ -200,11 +200,11 @@ table{
     }
 
     th {
-      font-size: 5vw;
+      font-size: clamp(2rem, 5vw, 6rem);
     }
 
     .medal {
-      font-size: 5vw;
+      font-size: clamp(2rem, 5vw, 6rem);
     }
 
     /* Menú superior: tamaño y consistencia visual en móviles */
@@ -212,7 +212,7 @@ table{
     #teamSearch,
     #btnSearch,
     #settingsButton {
-      font-size: 4vw;
+      font-size: clamp(1.5rem, 4vw, 5rem);
       padding: 1vw 2vw;
       border: 0.4vw solid var(--c-principal);
       border-radius: 1vw;
@@ -236,7 +236,7 @@ table{
 
     #btnLoad,
     .footer button {
-      font-size: 4vw;
+      font-size: clamp(1.5rem, 4vw, 5rem);
       padding: 1vw 2vw;
     }
 
@@ -246,12 +246,17 @@ table{
 
     td:nth-child(2) {
       word-wrap: break-word;
-      font-size: 4vw;
+      font-size: clamp(1.2rem, 4vw, 5rem);
     }
 
     td:nth-child(3), td:nth-child(4) {
       text-align: right;
       padding-right: 2vw;
+    }
+
+    /* Reducir tamaño de la fuente exclusivamente de la fecha en móvil */
+    td:nth-child(4) {
+      font-size: clamp(1rem, 3vw, 3.5rem);
     }
   }
   </style>
@@ -330,8 +335,13 @@ var MS_30D = 30 * 24 * 60 * 60 * 1000;
 
 var currentRaw = [];
 var dateSelector = document.getElementById('dateSelect');
-var highlightLast = true;
-var chkHighlight  = document.getElementById('chkHighlight');
+var chkHighlight = document.getElementById('chkHighlight');
+var highlightLast = false;
+if (chkHighlight) {
+  // Si estamos en la ventana principal (no embebida), leer el estado del checkbox
+  highlightLast = (window === window.top) ? chkHighlight.checked : false;
+}
+// var chkHighlight  = document.getElementById('chkHighlight');
 
 document.getElementById('teamSearch').addEventListener('input', function(e){
   if (isPlaying) {
@@ -489,7 +499,10 @@ function render(){
   }
 
   /* construir tabla: siempre 10 filas */
-  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
+  var isMobile = window.innerWidth <= 768;
+  var thScore = isMobile ? 'Puntos' : 'Puntuación';
+  var thDate  = isMobile ? 'Día' : 'Fecha';
+  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>' + thScore + '</th><th>' + thDate + '</th></tr>';
 
   for (var rowIdx = 0; rowIdx < 10; rowIdx++) {
     var r = (rowIdx < top10.length) ? top10[rowIdx] : null;
@@ -507,7 +520,7 @@ function render(){
       html += '<tr class="' + (isCurrent ? 'highlight' : '') + '"><td class="medal">' + medal + '</td>' +
               '<td>' + r.teamName + '</td>' +
               '<td>' + r.score.toLocaleString("es-ES") + '</td>' +
-              '<td>' + r.date.slice(8,10) + '-' + r.date.slice(5,7) + '</td></tr>';
+              '<td>' + r.date.slice(8,10) + '-' + r.date.slice(5,7) + '-' + r.date.slice(2,4) + '</td></tr>';
     } else {
       html += '<tr><td class="medal">' + medal + '</td><td></td><td></td><td></td></tr>';
     }
@@ -594,7 +607,7 @@ document.getElementById('btnNext').onclick = function(){
 dateSelector.onchange = function(){
   rebuildByGame();
 };
-chkHighlight.onchange = function(){
+if (chkHighlight) chkHighlight.onchange = function(){
   highlightLast = this.checked;
   render();
 };
