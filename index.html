@@ -264,10 +264,15 @@ table{
     }
   }
   </style>
+  <style>
+#footerUpdate {
+  color: #fff;
+}
+</style>
 </head>
 
 <body>
-<div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 0.6vh 1vw 0 1vw; margin-bottom: 2vh;">
+<div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
   <select id="dateSelect" style="font-size:1.8vw;">
     <option value="all">Absoluto</option>
     <option value="last30" selected>Últimos 30 días</option>
@@ -309,6 +314,7 @@ table{
   </div>
   <table id="ranking"></table>
   <!-- Footer eliminado porque su contenido fue movido arriba -->
+  <div id="footerUpdate" class="footer"></div>
 </div>
 
 <!-- ===== Script ES5 compatible ===== -->
@@ -537,6 +543,28 @@ function render(){
 }
 // --- Fin de mover render ---
 
+function getLastUpdateDate(){
+  if (!currentRaw || !currentRaw.length) return null;
+  var last = currentRaw.reduce(function(max, r){
+    var d = parseJSONDate(r.date);
+    return (!max || d > max) ? d : max;
+  }, null);
+  return last;
+}
+
+function updateFooterDate(){
+  var el = document.getElementById('footerUpdate');
+  if (!el) return;
+  var last = getLastUpdateDate();
+  if (!last) {
+    el.textContent = '';
+    return;
+  }
+  var opts = { day: '2-digit', month: 'long', year: 'numeric' };
+  var fecha = last.toLocaleDateString('es-ES', opts);
+  el.textContent = 'Última actualización: ' + fecha;
+}
+
 /* Re-filtra y agrupa los datos según dateSelect */
 function rebuildByGame(){
   var currentGameName = (games[idx] && games[idx][0]) ? games[idx][0] : null;
@@ -578,6 +606,7 @@ function rebuildByGame(){
   updatePlayPauseIcon();
   lastTick = Date.now();
   if (!timer) startTimer();
+  updateFooterDate();
 }
 
 fetch('hz-scores.json')
@@ -585,6 +614,7 @@ fetch('hz-scores.json')
   .then(function(raw){
     currentRaw = raw;
     rebuildByGame();
+    updateFooterDate();
   })
   .catch(function(err){
     console.error("Error cargando JSON por defecto:", err);
@@ -657,6 +687,7 @@ fileInput.onchange = function(evt){
       var data = JSON.parse(e.target.result);
       currentRaw = data;
       rebuildByGame();
+      updateFooterDate();
     }catch(err){
       alert("JSON inválido");
     }
