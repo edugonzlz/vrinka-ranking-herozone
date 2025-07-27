@@ -315,7 +315,7 @@ table{
 <script>
 // Temporizador deshabilitado: variables eliminadas
 
-var CYCLE_SECONDS = 5;
+var CYCLE_SECONDS = 15;
 var NOW = new Date();
 var MS_30D = 30 * 24 * 60 * 60 * 1000;
 
@@ -574,8 +574,7 @@ function rebuildByGame(){
 
   render();
   resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
-  // Arrancar temporizador en modo play al cargar datos por primera vez
-  isPlaying = true;
+  // Mantener el estado anterior del temporizador (play o pausa)
   updatePlayPauseIcon();
   lastTick = Date.now();
   if (!timer) startTimer();
