@@ -193,7 +193,7 @@ table{
   </label>
   <button id="btnSearch">Buscar</button>
   <div style="position:relative; display:inline-block;">
-    <button onclick="toggleFooter()" style="font-size:1.8vw; background:transparent; border:0.2vw solid var(--c-principal); color:var(--c-hi2); border-radius:0.4vw; padding:0.2vw 0.8vw; cursor:pointer;">
+    <button id="settingsButton" onclick="toggleFooter()" style="font-size:1.8vw; background:transparent; border:0.2vw solid var(--c-principal); color:var(--c-hi2); border-radius:0.4vw; padding:0.2vw 0.8vw; cursor:pointer;">
       ⚙️
     </button>
     <div id="footerContent" style="display:none; position:absolute; top:100%; right:0; background:#111; padding:2vh 2vw; border:0.2vw solid var(--c-principal); border-radius:0.4vw; z-index:9999; min-width:22vw;">
@@ -478,6 +478,16 @@ function stopLoop(){
   cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
   // progress.style.width = '100%';
   pausedAt = performance.now() - startTime;
+}
+</script>
+<script>
+if (window !== window.top) {
+  // Página embebida
+  const logo = document.getElementById('vrinkaLogo');
+  if (logo) logo.style.display = 'none';
+
+  const options = document.getElementById('settingsButton');
+  if (options) options.style.display = 'none';
 }
 </script>
 <script>
