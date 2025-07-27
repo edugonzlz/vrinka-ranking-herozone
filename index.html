@@ -313,13 +313,116 @@ table{
 
 <!-- ===== Script ES5 compatible ===== -->
 <script>
-var loopId = null;
-var isPlaying = true;
-var startTime = 0;     // timestamp when progress started
-var pausedAt  = 0;     // ms elapsed when paused
-var CYCLE_SECONDS = 25;
+// Temporizador deshabilitado: variables eliminadas
+
+var CYCLE_SECONDS = 5;
 var NOW = new Date();
 var MS_30D = 30 * 24 * 60 * 60 * 1000;
+
+// === TEMPORIZADOR Y PROGRESO ===
+var isPlaying = true;
+var timer = null;
+var progress = 0;
+var lastTick = null;
+var progressBar = null;
+var playPauseIcon = null;
+
+window.addEventListener('DOMContentLoaded', function() {
+  progressBar = document.getElementById('progressBar');
+  playPauseIcon = document.getElementById('playPauseIcon');
+  updatePlayPauseIcon();
+  // startTimer(); // Elimino el inicio automático aquí
+});
+
+function startTimer() {
+  if (timer) clearInterval(timer);
+  isPlaying = true;
+  updatePlayPauseIcon();
+  lastTick = Date.now();
+  timer = setInterval(function() {
+    if (!isPlaying) return;
+    var now = Date.now();
+    var elapsed = (now - lastTick) / 1000;
+    lastTick = now;
+    progress += (elapsed / CYCLE_SECONDS) * 100;
+    if (progress >= 100) {
+      progress = 0;
+      nextGame();
+    }
+    updateProgressBar();
+  }, 50);
+}
+
+function stopTimer() {
+  isPlaying = false;
+  updatePlayPauseIcon();
+}
+
+function resetTimer() {
+  progress = 0;
+  updateProgressBar();
+  lastTick = Date.now();
+}
+
+function updateProgressBar() {
+  if (!progressBar) progressBar = document.getElementById('progressBar');
+  progressBar.style.width = Math.min(progress, 100) + '%';
+}
+
+function updatePlayPauseIcon() {
+  if (!playPauseIcon) playPauseIcon = document.getElementById('playPauseIcon');
+  if (isPlaying) {
+    playPauseIcon.src = 'icon_pause.png';
+    playPauseIcon.alt = 'Pausa';
+  } else {
+    playPauseIcon.src = 'icon_play.png';
+    playPauseIcon.alt = 'Play';
+  }
+}
+
+// Botón play/pausa
+if (document.getElementById('btnPlayPause')) {
+  document.getElementById('btnPlayPause').onclick = function(){
+    if (isPlaying) {
+      stopTimer();
+    } else {
+      isPlaying = true;
+      updatePlayPauseIcon();
+      lastTick = Date.now();
+    }
+  };
+}
+
+// Botón siguiente
+if (document.getElementById('btnNext')) {
+  document.getElementById('btnNext').onclick = function(){
+    nextGame();
+    resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
+  };
+}
+
+// Asignar eventos solo si los elementos existen
+if (dateSelector) {
+  dateSelector.onchange = function(){
+    rebuildByGame();
+    resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
+  };
+}
+if (chkHighlight) {
+  chkHighlight.onchange = function(){
+    highlightLast = this.checked;
+    render();
+    resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
+  };
+}
+
+// Al cambiar de juego manualmente
+function nextGame(){
+  if (!games.length) return;
+  idx = (idx + 1) % games.length;
+  render();
+  resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
+}
 
 var currentRaw = [];
 var dateSelector = document.getElementById('dateSelect');
@@ -380,89 +483,11 @@ function daysAgo(date){
   return NOW - date;
 }
 
-/* Re-filtra y agrupa los datos según dateSelect */
-function rebuildByGame(){
-  var byGame = {};
-  currentRaw.forEach(function(r){
-    if (!r.game || !r.game.trim()) return;
-    var gName = r.game.trim();
-    var d = parseJSONDate(r.date);
-    if(!inRange(d)) return;          // aplica filtro
-    if(!byGame[gName]) byGame[gName] = [];
-    byGame[gName].push(r);
-  });
-  Object.keys(byGame).forEach(function(g){
-    byGame[g].sort(function(a,b){ return b.score - a.score; });
-  });
-  initCarousel(byGame);
-}
-
-fetch('hz-scores.json')
-  .then(function(r){ return r.json(); })
-  .then(function(raw){
-    currentRaw = raw;
-    rebuildByGame();
-  })
-  .catch(function(err){
-    console.error("Error cargando JSON por defecto:", err);
-  });
-
-var rankingEl = document.getElementById('ranking');
-var titleEl   = document.getElementById('title');
-// var progress = document.getElementById('progress');
-var games     = [];
-var idx       = 0;
-
-/* ==== PROGRESS BAR ANIMATION ==== */
-function animateProgress(fromMs){
-  var dur = CYCLE_SECONDS * 1000;
-  var start = performance.now() - fromMs;
-  startTime = start;
-
-  function frame(now){
-    var elapsed = now - start;
-    var pct = Math.min(elapsed / dur, 1);
-    var bar = document.getElementById('progressBar');
-    if (bar) {
-      bar.style.width = (pct * 100) + '%';
-    }
-    if (pct < 1){
-      requestAnimationFrame(frame);
-    }
-  }
-
-  requestAnimationFrame(frame);
-}
-function nextGame(){
-  idx = (idx + 1) % games.length;
-  render();
-  animateProgress(0);
-}
-/* ================================= */
-
-function initCarousel(obj){
-  games = Object.keys(obj).map(function(k){ return [k, obj[k]]; });
-  if(!games.length){
-    rankingEl.innerHTML =
-      '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
-    titleEl.textContent = 'SIN DATOS RECIENTES';
-    return;
-  }
-  render();
-  idx = 0;
-  startLoop();
-}
-
+// --- Muevo la función render aquí antes de rebuildByGame ---
 function render(){
   var pair = games[idx];
   var game = pair[0];
   var rows = pair[1];
-
-  if(!rows.length){
-    rankingEl.innerHTML =
-      '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
-    return;
-  }
 
   titleEl.textContent = game.toUpperCase();
 
@@ -509,33 +534,71 @@ function render(){
     }
   }
   rankingEl.innerHTML = html;
-
 }
+// --- Fin de mover render ---
 
-function startLoop(){
-  stopLoop();                 // clear any existing loop
-  pausedAt = 0;
-  animateProgress(0);
-  loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
+/* Re-filtra y agrupa los datos según dateSelect */
+function rebuildByGame(){
+  var currentGameName = (games[idx] && games[idx][0]) ? games[idx][0] : null;
+
+  var byGame = {};
+  currentRaw.forEach(function(r){
+    if (!r.game || !r.game.trim()) return;
+    var gName = r.game.trim();
+    var d = parseJSONDate(r.date);
+    if(!inRange(d)) return;          // aplica filtro
+    if(!byGame[gName]) byGame[gName] = [];
+    byGame[gName].push(r);
+  });
+  Object.keys(byGame).forEach(function(g){
+    byGame[g].sort(function(a,b){ return b.score - a.score; });
+  });
+
+  // Si el juego actual no está en el rango, añádelo vacío
+  if (currentGameName && !byGame[currentGameName]) {
+    byGame[currentGameName] = [];
+  }
+
+  games = Object.keys(byGame).map(function(k){ return [k, byGame[k]]; });
+
+  if (!games.length) {
+    rankingEl.innerHTML =
+      '<tr><th class="medal">#</th><th>Equipo</th><th>Puntuación</th><th>Fecha</th></tr>';
+    titleEl.textContent = 'SIN DATOS RECIENTES';
+    stopTimer(); // Detener temporizador si no hay juegos
+    return;
+  }
+
+  idx = games.findIndex(pair => pair[0] === currentGameName);
+  if (idx === -1) idx = 0;
+
+  render();
+  resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
+  // Arrancar temporizador en modo play al cargar datos por primera vez
   isPlaying = true;
-  document.getElementById('playPauseIcon').src = 'icon_pause.png';
-  document.getElementById('playPauseIcon').alt = 'Pausa';
+  updatePlayPauseIcon();
+  lastTick = Date.now();
+  if (!timer) startTimer();
 }
 
-function stopLoop(){
-  if(loopId){
-    clearInterval(loopId);
-    loopId = null;
-  }
-  isPlaying = false;
-  document.getElementById('playPauseIcon').src = 'icon_play.png';
-  document.getElementById('playPauseIcon').alt = 'Reanudar';
-  var bar = document.getElementById('progressBar');
-  if (bar) {
-    bar.style.width = '100%';
-  }
-  pausedAt = performance.now() - startTime;
-}
+fetch('hz-scores.json')
+  .then(function(r){ return r.json(); })
+  .then(function(raw){
+    currentRaw = raw;
+    rebuildByGame();
+  })
+  .catch(function(err){
+    console.error("Error cargando JSON por defecto:", err);
+  });
+
+var rankingEl = document.getElementById('ranking');
+var titleEl   = document.getElementById('title');
+// var progress = document.getElementById('progress');
+var games     = [];
+var idx       = 0;
+
+/* ==== PROGRESS BAR ANIMATION ==== */
+// startLoop y stopLoop eliminadas
 </script>
 <script>
 if (window !== window.top) {
@@ -570,23 +633,8 @@ function outsideClickListener(event) {
 }
 </script>
 <script>
-document.getElementById('btnPlayPause').onclick = function(){
-  if(isPlaying){
-    stopLoop();
-  } else {
-    animateProgress(pausedAt);
-    loopId = setInterval(nextGame, CYCLE_SECONDS*1000 - pausedAt);
-    isPlaying = true;
-    document.getElementById('playPauseIcon').src = 'icon_pause.png';
-    document.getElementById('playPauseIcon').alt = 'Pausa';
-  }
-};
 document.getElementById('btnNext').onclick = function(){
   nextGame();
-  if(isPlaying){
-    clearInterval(loopId);
-    loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
-  }
 };
 dateSelector.onchange = function(){
   rebuildByGame();
