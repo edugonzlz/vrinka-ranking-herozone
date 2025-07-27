@@ -331,11 +331,6 @@ if (chkHighlight) {
 }
 // var chkHighlight  = document.getElementById('chkHighlight');
 
-document.getElementById('teamSearch').addEventListener('input', function(e){
-  if (isPlaying) {
-    stopLoop();
-  }
-});
 
   (function fillMonths(){
     var now = new Date();
@@ -626,8 +621,6 @@ fileInput.onchange = function(evt){
 // ----------------------------------------
 
 document.getElementById('btnSearch').onclick = function(){
-  stopLoop(); // pausa la rotación
-
   var input = document.getElementById('teamSearch').value.trim();
   var inputLower = input.toLowerCase();
   if(!input){
@@ -650,11 +643,16 @@ document.getElementById('btnSearch').onclick = function(){
   if(result.length){
     const title = `Posición del equipo "${input}"`;
     const body = result.map(r => `<div>${r}</div>`).join('');
+    // Remove existing popup if present
+    var existingPopup = document.getElementById('popupSearchResult');
+    if (existingPopup) existingPopup.remove();
+
     const popup = document.createElement('div');
+    popup.id = 'popupSearchResult';
     popup.style.position = 'fixed';
-    popup.style.top = '50%';
+    popup.style.top = '8vh';
     popup.style.left = '50%';
-    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.transform = 'translateX(-50%)';
     popup.style.background = '#000';
     popup.style.border = '2px solid #FF007F';
     popup.style.color = '#FFDD00';
@@ -673,6 +671,14 @@ document.getElementById('btnSearch').onclick = function(){
     alert(`No se ha encontrado el equipo "${input}" en ningún juego.`);
   }
 };
+
+// Permitir búsqueda con la tecla Enter en el campo de búsqueda
+document.getElementById('teamSearch').addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault(); // Prevent form submission or unexpected behavior
+    document.getElementById('btnSearch').click();
+  }
+});
 </script>
 </body>
 </html>
