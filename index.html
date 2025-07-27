@@ -124,6 +124,9 @@ table{
       border-radius: 0.4vw;
       padding: 0.2vw 0.4vw;
       margin-left: 0.4vw;
+      font-size: 1.8vw;
+      height: 2.8vw;
+      font-weight: bold;
     }
 
   #teamSearch,
@@ -145,12 +148,28 @@ table{
 </style>
   <style>
   @media screen and (max-width: 768px) {
+    body {
+      padding: 0;
+      margin: 0;
+      width: 100vw;
+    }
+
+    .frame {
+      width: 100vw;
+      padding-left: 0;
+      padding-right: 0;
+      padding-top: 1vh;
+      padding-bottom: 3vh;
+    }
+
     h1 {
       font-size: 6vw;
     }
 
     table {
+      width: 100%;
       font-size: 4.5vw;
+      table-layout: fixed;
     }
 
     th {
@@ -161,22 +180,51 @@ table{
       font-size: 5vw;
     }
 
+    /* Menú superior: tamaño y consistencia visual en móviles */
     #dateSelect,
     #teamSearch,
     #btnSearch,
+    #settingsButton {
+      font-size: 4vw;
+      padding: 1vw 2vw;
+      border: 0.4vw solid var(--c-principal);
+      border-radius: 1vw;
+      height: 8vw;
+    }
+    #dateSelect {
+      font-weight: bold;
+    }
+
+    #teamSearch {
+      min-width: 24vw;
+    }
+
+    #btnSearch {
+      font-weight: bold;
+    }
+
+    #settingsButton {
+      line-height: 1;
+    }
+
     #btnLoad,
     .footer button {
       font-size: 4vw;
       padding: 1vw 2vw;
     }
 
-    .frame {
-      width: 96vw;
-      padding: 1vh 0 3vh;
-    }
-
     #footerContent {
       min-width: 60vw !important;
+    }
+
+    td:nth-child(2) {
+      word-wrap: break-word;
+      font-size: 4vw;
+    }
+
+    td:nth-child(3), td:nth-child(4) {
+      text-align: right;
+      padding-right: 2vw;
     }
   }
   </style>
