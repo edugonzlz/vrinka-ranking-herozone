@@ -148,6 +148,10 @@ table{
 </style>
   <style>
   @media screen and (max-width: 768px) {
+    /* Reducir el gap del contenedor superior para móviles */
+    div[style*="gap: 2vw"] {
+      gap: 1vw !important;
+    }
     body {
       padding: 0;
       margin: 0;
@@ -170,6 +174,19 @@ table{
       width: 100%;
       font-size: 4.5vw;
       table-layout: fixed;
+    }
+    th:nth-child(1), td:nth-child(1) {
+      width: 10vw;
+      text-align: center;
+    }
+    th:nth-child(2), td:nth-child(2) {
+      width: 50vw;
+    }
+    th:nth-child(3), td:nth-child(3),
+    th:nth-child(4), td:nth-child(4) {
+      width: 20vw;
+      text-align: right;
+      padding-right: 2vw;
     }
 
     th {
