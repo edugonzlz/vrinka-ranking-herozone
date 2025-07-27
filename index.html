@@ -267,7 +267,7 @@ table{
 </head>
 
 <body>
-<div style="width: 100%; background: #000; border-bottom: 0.4vh solid var(--c-principal); z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.5vh 1vw; margin-bottom: 2vh;">
+<div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 0.6vh 1vw 0 1vw; margin-bottom: 2vh;">
   <select id="dateSelect" style="font-size:1.8vw;">
     <option value="all">Absoluto</option>
     <option value="last30" selected>Últimos 30 días</option>
@@ -289,38 +289,22 @@ table{
       <button id="btnLoad">Cargar datos</button>
     </div>
   </div>
+  <div style="display: flex; align-items: center; gap: 0.5vw;">
+    <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
+      <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
+    </button>
+    <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
+      <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
+    </button>
+  </div>
+  <div style="width: 100%; height: 0.6vh; background: #111; position: relative;">
+    <div id="progressBar" style="width: 0%; height: 100%; background: var(--c-principal); transition: width 0.1s linear;"></div>
+  </div>
 </div>
 <div class="frame">
-  <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 1vw;">
-    <div style="flex:1; display: flex; justify-content: flex-start;">
-      <img id="vrinkaLogo" src="logo_vrinka.svg" alt="VRINKA Logo" style="height: 6vh; max-width: 100%; object-fit: contain;">
-    </div>
-    <div style="flex:1; display: flex; justify-content: center; align-items: center;">
-      <h1 id="title" style="margin: 0; text-align: center;">Cargando…</h1>
-    </div>
-    <div style="flex:1; display: flex; justify-content: flex-end; align-items: center; gap: 1vw;">
-      <div style="display: flex; align-items: center; gap: 0.5vw;">
-        <svg id="circleProgress" width="6vh" height="6vh" viewBox="0 0 36 36">
-          <path
-            stroke="#FF007F"
-            stroke-width="3"
-            fill="none"
-            stroke-linecap="round"
-            d="M18 2.0845
-               a 15.9155 15.9155 0 0 1 0 31.831
-               a 15.9155 15.9155 0 0 1 0 -31.831"
-            stroke-dasharray="100, 100"
-            stroke-dashoffset="100"
-            id="circleStroke"
-          />
-        </svg>
-        <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
-          <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
-        </button>
-      </div>
-      <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
-        <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
-      </button>
+  <div style="display: flex; align-items: center; justify-content: center; padding: 0 1vw;">
+    <div style="display: flex; justify-content: center; align-items: center; text-align: center;">
+      <h1 id="title" style="margin: 0;">Cargando…</h1>
     </div>
   </div>
   <table id="ranking"></table>
@@ -443,15 +427,15 @@ function animateProgress(fromMs){
   function frame(now){
     var elapsed = now - start;
     var pct = Math.min(elapsed / dur, 1);
-    // progress.style.width = (pct * 100) + '%';
-    var stroke = document.getElementById('circleStroke');
-    stroke.setAttribute('stroke-dashoffset', 100 - pct * 100);
+    var bar = document.getElementById('progressBar');
+    if (bar) {
+      bar.style.width = (pct * 100) + '%';
+    }
     if (pct < 1){
-      stroke._raf = requestAnimationFrame(frame);
+      requestAnimationFrame(frame);
     }
   }
 
-  cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
   requestAnimationFrame(frame);
 }
 function nextGame(){
@@ -536,7 +520,6 @@ function render(){
 function startLoop(){
   stopLoop();                 // clear any existing loop
   pausedAt = 0;
-  // progress.style.width = '0';
   animateProgress(0);
   loopId = setInterval(nextGame, CYCLE_SECONDS * 1000);
   isPlaying = true;
@@ -552,8 +535,10 @@ function stopLoop(){
   isPlaying = false;
   document.getElementById('playPauseIcon').src = 'icon_play.png';
   document.getElementById('playPauseIcon').alt = 'Reanudar';
-  cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
-  // progress.style.width = '100%';
+  var bar = document.getElementById('progressBar');
+  if (bar) {
+    bar.style.width = '100%';
+  }
   pausedAt = performance.now() - startTime;
 }
 </script>
