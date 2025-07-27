@@ -117,22 +117,99 @@ table{
   overflow:hidden;
   max-height:80vh;            /* impide que tape la barra y el footer */
 }
-#dateSelect {
+  #dateSelect {
+      background: #000;
+      color: var(--c-hi2);
+      border: 0.2vw solid var(--c-principal);
+      border-radius: 0.4vw;
+      padding: 0.2vw 0.4vw;
+      margin-left: 0.4vw;
+    }
+
+  #teamSearch,
+  #btnSearch {
     background: #000;
     color: var(--c-hi2);
     border: 0.2vw solid var(--c-principal);
     border-radius: 0.4vw;
-    padding: 0.2vw 0.4vw;
+    padding: 0.2vw 0.8vw;
     margin-left: 0.4vw;
+    font-size: 1.8vw;
+  }
+
+  #btnSearch:hover {
+    background: var(--c-principal);
+    color: #000;
+    cursor: pointer;
   }
 </style>
+  <style>
+  @media screen and (max-width: 768px) {
+    h1 {
+      font-size: 6vw;
+    }
+
+    table {
+      font-size: 4.5vw;
+    }
+
+    th {
+      font-size: 5vw;
+    }
+
+    .medal {
+      font-size: 5vw;
+    }
+
+    #dateSelect,
+    #teamSearch,
+    #btnSearch,
+    #btnLoad,
+    .footer button {
+      font-size: 4vw;
+      padding: 1vw 2vw;
+    }
+
+    .frame {
+      width: 96vw;
+      padding: 1vh 0 3vh;
+    }
+
+    #footerContent {
+      min-width: 60vw !important;
+    }
+  }
+  </style>
 </head>
 
 <body>
+<div style="width: 100%; background: #000; border-bottom: 0.4vh solid var(--c-principal); z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.5vh 1vw; margin-bottom: 2vh;">
+  <select id="dateSelect" style="font-size:1.8vw;">
+    <option value="all">Absoluto</option>
+    <option value="last30" selected>Últimos 30 días</option>
+  </select>
+  <label style="font-size:1.8vw;">
+    <input type="text" id="teamSearch" placeholder="Buscar equipo" style="font-size:1.8vw; padding: 0.2vw;">
+  </label>
+  <button id="btnSearch">Buscar</button>
+  <div style="position:relative; display:inline-block;">
+    <button onclick="toggleFooter()" style="font-size:1.8vw; background:transparent; border:0.2vw solid var(--c-principal); color:var(--c-hi2); border-radius:0.4vw; padding:0.2vw 0.8vw; cursor:pointer;">
+      ⚙️
+    </button>
+    <div id="footerContent" style="display:none; position:absolute; top:100%; right:0; background:#111; padding:2vh 2vw; border:0.2vw solid var(--c-principal); border-radius:0.4vw; z-index:9999; min-width:22vw;">
+      <label style="margin-left:0; font-size:1.5vw;">
+        <input type="checkbox" id="chkHighlight" checked>
+        Marcar última partida
+      </label>
+      <input type="file" id="fileLoader" accept=".json" style="display:none;">
+      <button id="btnLoad">Cargar datos</button>
+    </div>
+  </div>
+</div>
 <div class="frame">
   <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 1vw;">
     <div style="flex:1; display: flex; justify-content: flex-start;">
-      <img src="logo_vrinka.svg" alt="VRINKA Logo" style="height: 6vh;">
+      <img src="logo_vrinka.svg" alt="VRINKA Logo" style="height: 6vh; max-width: 100%; object-fit: contain;">
     </div>
     <div style="flex:1; display: flex; justify-content: center; align-items: center;">
       <h1 id="title" style="margin: 0; text-align: center;">Cargando…</h1>
@@ -180,27 +257,7 @@ table{
     </div>
   </div>
   <table id="ranking"></table>
-  <div class="footer">
-  <div style="margin-bottom: 1vh;">
-    <select id="dateSelect" style="font-size:1.5vw;">
-      <option value="all">Absoluto</option>
-      <option value="last30" selected>Últimos 30 días</option>
-    </select>
-    <label style="margin-left:1vw; font-size:1.5vw;">
-      Buscar equipo:
-      <input type="text" id="teamSearch" style="font-size:1.5vw; padding: 0.2vw;">
-    </label>
-    <button id="btnSearch" style="font-size:1.5vw;">Buscar</button>
-  </div>
-  <div>
-    <label style="margin-left:0; font-size:1.5vw;">
-      <input type="checkbox" id="chkHighlight" checked>
-      Marcar última partida
-    </label>
-    <input type="file" id="fileLoader" accept=".json" style="display:none;">
-    <button id="btnLoad">Cargar datos</button>
-  </div>
-</div>
+  <!-- Footer eliminado porque su contenido fue movido arriba -->
 </div>
 
 <!-- ===== Script ES5 compatible ===== -->
@@ -421,6 +478,28 @@ function stopLoop(){
   cancelAnimationFrame((document.getElementById('circleStroke')._raf || 0));
   // progress.style.width = '100%';
   pausedAt = performance.now() - startTime;
+}
+</script>
+<script>
+function toggleFooter(){
+  var el = document.getElementById('footerContent');
+  var isVisible = el.style.display === 'block';
+  el.style.display = isVisible ? 'none' : 'block';
+
+  if (!isVisible) {
+    setTimeout(() => {
+      document.addEventListener('click', outsideClickListener);
+    }, 0);
+  }
+}
+
+function outsideClickListener(event) {
+  var menu = document.getElementById('footerContent');
+  var button = event.target.closest('button[onclick="toggleFooter()"]');
+  if (!menu.contains(event.target) && !button) {
+    menu.style.display = 'none';
+    document.removeEventListener('click', outsideClickListener);
+  }
 }
 </script>
 <script>
