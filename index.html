@@ -145,8 +145,18 @@ table{
     color: #000;
     cursor: pointer;
   }
-</style>
-  <style>
+  .control-icon {
+    height: 2.5vh;
+    object-fit: contain;
+  }
+  .control-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 4vh;
+    height: 4vh;
+    padding: 0;
+  }
   @media screen and (max-width: 768px) {
     /* Reducir el gap del contenedor superior para móviles */
     div[style*="gap: 2vw"] {
@@ -280,8 +290,8 @@ table{
       <h1 id="title" style="margin: 0; text-align: center;">Cargando…</h1>
     </div>
     <div style="flex:1; display: flex; justify-content: flex-end; align-items: center; gap: 1vw;">
-      <div style="position: relative; width: 6vh; height: 6vh;">
-        <svg id="circleProgress" width="6vh" height="6vh" viewBox="0 0 36 36" style="position: absolute; top: 0; left: 0;">
+      <div style="display: flex; align-items: center; gap: 0.5vw;">
+        <svg id="circleProgress" width="6vh" height="6vh" viewBox="0 0 36 36">
           <path
             stroke="#FF007F"
             stroke-width="3"
@@ -295,8 +305,8 @@ table{
             id="circleStroke"
           />
         </svg>
-        <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar" style="position:absolute; top:0; left:0; width:100%; height:100%;">
-          <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" style="height: 4vh; width: auto;" />
+        <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
+          <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
         </button>
       </div>
       <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
@@ -664,17 +674,3 @@ document.getElementById('btnSearch').onclick = function(){
 </script>
 </body>
 </html>
-  .control-icon {
-    height: 4vh;
-    object-fit: contain;
-  }
-</style>
-<style>
-.control-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  width: 4vh;
-  height: 4vh;
-  padding: 0;
-}
