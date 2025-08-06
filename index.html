@@ -160,7 +160,7 @@ table{
   @media screen and (max-width: 768px) {
     /* Reducir el gap del contenedor superior para móviles */
     div[style*="gap: 2vw"] {
-      gap: 1vw !important;
+      gap: 0.8vw !important; /* Reducido para más compacidad */
     }
     body {
       padding: 0;
@@ -212,26 +212,25 @@ table{
     #teamSearch,
     #btnSearch,
     #settingsButton {
-      font-size: clamp(1.5rem, 4vw, 5rem);
-      padding: 1vw 2vw;
+      font-size: clamp(1.2rem, 3.2vw, 3.8rem); /* Tamaño de fuente más reducido */
+      padding: 0.8vw 1.8vw; /* Padding reducido */
       border: 0.4vw solid var(--c-principal);
       border-radius: 1vw;
-      height: 8vw;
-    }
-    #dateSelect {
-      font-weight: bold;
+      height: auto; /* Altura automática basada en padding */
+      font-weight: normal; /* Quitamos la negrita */
     }
 
     #teamSearch {
-      min-width: 24vw;
-    }
-
-    #btnSearch {
-      font-weight: bold;
+      width: 35vw; /* Ancho aumentado para legibilidad */
     }
 
     #settingsButton {
       line-height: 1;
+    }
+
+    .control-btn {
+      width: 7vw;
+      height: 7vw;
     }
 
     #btnLoad,
@@ -273,13 +272,13 @@ table{
 
 <body>
 <div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
-  <select id="dateSelect" style="font-size:1.8vw;">
+  <select id="dateSelect">
     <option value="all">Absoluto</option>
     <option value="today">Hoy</option>
     <option value="last30" selected>Últimos 30 días</option>
   </select>
-  <label style="font-size:1.8vw;">
-    <input type="text" id="teamSearch" placeholder="Buscar equipo" style="font-size:1.8vw; padding: 0.2vw;">
+  <label>
+    <input type="text" id="teamSearch" placeholder="nombre de equipo">
   </label>
   <button id="btnSearch">Buscar</button>
   <div style="position:relative; display:inline-block;">
