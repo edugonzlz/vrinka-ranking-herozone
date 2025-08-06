@@ -275,6 +275,7 @@ table{
 <div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
   <select id="dateSelect" style="font-size:1.8vw;">
     <option value="all">Absoluto</option>
+    <option value="today">Hoy</option>
     <option value="last30" selected>Últimos 30 días</option>
   </select>
   <label style="font-size:1.8vw;">
@@ -471,6 +472,11 @@ function inRange(dateObj){
     if(sel === 'all'){                 // sin filtro: todos los datos
       return true;
     }
+    if(sel === 'today'){               // hoy
+      return dateObj.getFullYear() === NOW.getFullYear() &&
+             dateObj.getMonth() === NOW.getMonth() &&
+             dateObj.getDate() === NOW.getDate();
+    }
     if(sel === 'last30'){              // últimos 30 días
       return (NOW - dateObj) <= MS_30D;
     }
@@ -637,6 +643,12 @@ if (window !== window.top) {
 
   const options = document.getElementById('settingsButton');
   if (options) options.style.display = 'none';
+
+  // Si está embebida, no mostrar la opción "Hoy"
+  const todayOption = document.querySelector('#dateSelect option[value="today"]');
+  if (todayOption) {
+    todayOption.remove();
+  }
 }
 </script>
 <script>
@@ -666,6 +678,12 @@ document.getElementById('btnNext').onclick = function(){
   nextGame();
 };
 dateSelector.onchange = function(){
+  if (this.value === 'today') {
+    if (chkHighlight) {
+      chkHighlight.checked = false;
+      // highlightLast = chkHighlight.checked;
+    }
+  }
   rebuildByGame();
 };
 if (chkHighlight) chkHighlight.onchange = function(){
