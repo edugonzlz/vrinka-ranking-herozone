@@ -649,6 +649,9 @@ if (window !== window.top) {
   if (todayOption) {
     todayOption.remove();
   }
+
+  // Evitar scroll vertical en la página embebida
+  document.body.style.overflowY = 'hidden';
 }
 </script>
 <script>
