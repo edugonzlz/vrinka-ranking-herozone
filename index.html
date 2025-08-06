@@ -220,11 +220,26 @@ table{
       font-weight: normal; /* Quitamos la negrita */
     }
 
-    #dateSelect,
     #teamSearch {
-      width: 38vw; /* Ancho unificado para select y campo de búsqueda */
+      width: 50vw; /* Ancho del campo de búsqueda */
     }
 
+    /* Nuevas reglas para forzar el layout en móvil */
+    #dateSelect, .search-controls, .player-controls {
+      flex-basis: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2vw;
+      align-items: center;
+    }
+    #dateSelect {
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .search-controls, .player-controls {
+      gap: 2vw;
+    }
     #settingsButton {
       line-height: 1;
     }
@@ -278,30 +293,34 @@ table{
     <option value="today">Hoy</option>
     <option value="last30" selected>Últimos 30 días</option>
   </select>
-  <label>
-    <input type="text" id="teamSearch" placeholder="Nombre de equipo">
-  </label>
-  <button id="btnSearch">Buscar</button>
-  <div style="position:relative; display:inline-block;">
-    <button id="settingsButton" onclick="toggleFooter()" style="font-size:1.8vw; background:transparent; border:0.2vw solid var(--c-principal); color:var(--c-hi2); border-radius:0.4vw; padding:0.2vw 0.8vw; cursor:pointer;">
-      ⚙️
-    </button>
-    <div id="footerContent" style="display:none; position:absolute; top:100%; right:0; background:#111; padding:2vh 2vw; border:0.2vw solid var(--c-principal); border-radius:0.4vw; z-index:9999; min-width:22vw;">
-      <label style="margin-left:0; font-size:1.5vw;">
-        <input type="checkbox" id="chkHighlight" checked>
-        Marcar última partida
-      </label>
-      <input type="file" id="fileLoader" accept=".json" style="display:none;">
-      <button id="btnLoad">Cargar datos</button>
-    </div>
+  <div class="search-controls">
+    <label>
+      <input type="text" id="teamSearch" placeholder="Nombre de equipo">
+    </label>
+    <button id="btnSearch">Buscar</button>
   </div>
-  <div style="display: flex; align-items: center; gap: 0.5vw;">
-    <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
-      <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
-    </button>
-    <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
-      <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
-    </button>
+  <div class="player-controls">
+    <div style="position:relative; display:inline-block;">
+      <button id="settingsButton" onclick="toggleFooter()" style="font-size:1.8vw; background:transparent; border:0.2vw solid var(--c-principal); color:var(--c-hi2); border-radius:0.4vw; padding:0.2vw 0.8vw; cursor:pointer;">
+        ⚙️
+      </button>
+      <div id="footerContent" style="display:none; position:absolute; top:100%; right:0; background:#111; padding:2vh 2vw; border:0.2vw solid var(--c-principal); border-radius:0.4vw; z-index:9999; min-width:22vw;">
+        <label style="margin-left:0; font-size:1.5vw;">
+          <input type="checkbox" id="chkHighlight" checked>
+          Marcar última partida
+        </label>
+        <input type="file" id="fileLoader" accept=".json" style="display:none;">
+        <button id="btnLoad">Cargar datos</button>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.5vw;">
+      <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
+        <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
+      </button>
+      <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
+        <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
+      </button>
+    </div>
   </div>
   <div style="width: 100%; height: 0.6vh; background: #111; position: relative;">
     <div id="progressBar" style="width: 0%; height: 100%; background: var(--c-principal); transition: width 0.1s linear;"></div>
