@@ -774,7 +774,7 @@ document.getElementById('btnSearch').onclick = function(){
   });
 
   if(result.length){
-    const title = `Posición del equipo "${input}"`;
+    const title = `Posición del equipo "${input.toUpperCase()}"`;
     const body = result.map(r => `<div>${r}</div>`).join('');
     // Remove existing popup if present
     var existingPopup = document.getElementById('popupSearchResult');
@@ -790,18 +790,18 @@ document.getElementById('btnSearch').onclick = function(){
     popup.style.border = '2px solid #FF007F';
     popup.style.color = '#FFDD00';
     popup.style.padding = '2vh 4vw';
-    popup.style.fontSize = '2vw';
+    popup.style.fontSize = 'clamp(1.2rem, 4vw, 2rem)';
     popup.style.textAlign = 'center';
     popup.style.zIndex = 9999;
     popup.style.boxShadow = '0 0 1vw #FF007F';
     popup.style.borderRadius = '1vw';
-    popup.innerHTML = `<div style="margin-bottom:1vh;font-weight:bold;">${title}</div>${body}<div style="margin-top:2vh;"><button id="popupClose" style="font-size:1.5vw;padding:0.5vh 2vw;border:none;border-radius:0.5vw;background:#FF007F;color:#000;cursor:pointer;">Cerrar</button></div>`;
+    popup.innerHTML = `<div style="margin-bottom:1vh;font-weight:bold;">${title}</div>${body}<div style="margin-top:2vh;"><button id="popupClose" style="font-size:clamp(1rem, 3.5vw, 1.8rem);padding:0.5vh 2vw;border:none;border-radius:0.5vw;background:#FF007F;color:#000;cursor:pointer;">Cerrar</button></div>`;
     document.body.appendChild(popup);
     document.getElementById('popupClose').onclick = function(){
       popup.remove();
     };
   } else {
-    alert(`No se ha encontrado el equipo "${input}" en ningún juego.`);
+    alert(`No se ha encontrado el equipo "${input.toUpperCase()}" en ningún juego.`);
   }
 };
 
