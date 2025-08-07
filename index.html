@@ -163,6 +163,11 @@ table{
     height: 4vh;
     padding: 0;
   }
+
+  /* Ocultar texto móvil por defecto */
+  .mobile-label, .mobile-text {
+    display: none;
+  }
   @media screen and (max-width: 768px) {
     /* Reducir el gap del contenedor superior para móviles */
     div[style*="gap: 2vw"] {
@@ -256,9 +261,42 @@ table{
       line-height: 1;
     }
 
+    .player-controls .control-icon {
+      display: none; /* Ocultar iconos en móvil */
+    }
+
+    .mobile-label, .mobile-text {
+      display: inline; /* Mostrar texto en móvil */
+      font-size: clamp(1.2rem, 3.2vw, 3.8rem); /* Unificado con #btnSearch */
+      color: var(--c-hi2);
+      vertical-align: middle;
+      font-weight: normal; /* Unificado con #btnSearch */
+    }
+
+    .mobile-label {
+      font-weight: bold;
+    }
+
+    .game-controls-wrapper {
+      gap: 2vw !important;
+    }
+
     .control-btn {
-      width: 7vw;
-      height: 7vw;
+      width: auto;
+      height: auto;
+      border: 0.4vw solid var(--c-principal);
+      border-radius: 1vw;
+      padding: 0.8vw 1.8vw; /* Unificado con #btnSearch */
+      background: transparent;
+      line-height: 1;
+    }
+
+    .control-btn:hover {
+      background: var(--c-principal);
+    }
+
+    .control-btn:hover .mobile-text {
+      color: #000;
     }
 
     #btnLoad,
@@ -325,12 +363,15 @@ table{
         <button id="btnLoad">Cargar datos</button>
       </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 0.5vw;">
+    <div class="game-controls-wrapper" style="display: flex; align-items: center; gap: 0.5vw;">
+      <span class="mobile-label">Juegos: </span>
       <button id="btnPlayPause" class="control-btn" aria-label="Pausa/Reanudar">
         <img id="playPauseIcon" src="icon_pause.png" alt="Pausa" class="control-icon" />
+        <span class="mobile-text" id="playPauseText"></span>
       </button>
       <button id="btnNext" class="control-btn" aria-label="Siguiente juego">
         <img src="icon_forward.png" alt="Siguiente" class="control-icon" />
+        <span class="mobile-text">Siguiente</span>
       </button>
     </div>
   </div>
@@ -364,18 +405,20 @@ var progress = 0;
 var lastTick = null;
 var progressBar = null;
 var playPauseIcon = null;
+var playPauseText = null;
 
 window.addEventListener('DOMContentLoaded', function() {
   progressBar = document.getElementById('progressBar');
   playPauseIcon = document.getElementById('playPauseIcon');
-  updatePlayPauseIcon();
+  playPauseText = document.getElementById('playPauseText');
+  updatePlayPauseState();
   // startTimer(); // Elimino el inicio automático aquí
 });
 
 function startTimer() {
   if (timer) clearInterval(timer);
   isPlaying = true;
-  updatePlayPauseIcon();
+  updatePlayPauseState();
   lastTick = Date.now();
   timer = setInterval(function() {
     if (!isPlaying) return;
@@ -393,7 +436,7 @@ function startTimer() {
 
 function stopTimer() {
   isPlaying = false;
-  updatePlayPauseIcon();
+  updatePlayPauseState();
 }
 
 function resetTimer() {
@@ -407,14 +450,17 @@ function updateProgressBar() {
   progressBar.style.width = Math.min(progress, 100) + '%';
 }
 
-function updatePlayPauseIcon() {
+function updatePlayPauseState() {
   if (!playPauseIcon) playPauseIcon = document.getElementById('playPauseIcon');
+  if (!playPauseText) playPauseText = document.getElementById('playPauseText');
   if (isPlaying) {
     playPauseIcon.src = 'icon_pause.png';
     playPauseIcon.alt = 'Pausa';
+    if (playPauseText) playPauseText.textContent = 'Pausar ciclo';
   } else {
     playPauseIcon.src = 'icon_play.png';
     playPauseIcon.alt = 'Play';
+    if (playPauseText) playPauseText.textContent = 'Reanudar ciclo';
   }
 }
 
@@ -425,7 +471,7 @@ if (document.getElementById('btnPlayPause')) {
       stopTimer();
     } else {
       isPlaying = true;
-      updatePlayPauseIcon();
+      updatePlayPauseState();
       lastTick = Date.now();
     }
   };
@@ -640,7 +686,7 @@ function rebuildByGame(){
   render();
   resetTimer(); // Solo reinicia progreso, no cambia estado play/pausa
   // Mantener el estado anterior del temporizador (play o pausa)
-  updatePlayPauseIcon();
+  updatePlayPauseState();
   lastTick = Date.now();
   if (!timer) startTimer();
   updateFooterDate();
