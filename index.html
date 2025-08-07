@@ -768,14 +768,16 @@ document.getElementById('btnSearch').onclick = function(){
       if (normalizedTeamName === normalizedInput) {
         gameResults.push({
           position: i + 1,
-          score: rows[i].score
+          score: rows[i].score,
+          date: rows[i].date
         });
       }
     }
     if (gameResults.length > 0) {
       var gameTitle = '<strong style="text-align:left; display:block;">' + game + '</strong>';
       var detailsHtml = gameResults.map(function(res) {
-        return '<div style="font-size: 0.9em; text-align: left; padding-left: 1em;">- Puesto ' + res.position + ' (' + res.score.toLocaleString('es-ES') + ' pts)</div>';
+        var formattedDate = res.date.slice(8,10) + '-' + res.date.slice(5,7) + '-' + res.date.slice(2,4);
+        return '<div style="font-size: 0.9em; text-align: left; padding-left: 1em;">- Puesto ' + res.position + ' (' + res.score.toLocaleString('es-ES') + ' pts) - ' + formattedDate + '</div>';
       }).join('');
       result.push(gameTitle + detailsHtml);
     }
@@ -791,9 +793,14 @@ document.getElementById('btnSearch').onclick = function(){
     const popup = document.createElement('div');
     popup.id = 'popupSearchResult';
     popup.style.position = 'fixed';
-    popup.style.top = '8vh';
     popup.style.left = '50%';
     popup.style.transform = 'translateX(-50%)';
+    if (window.innerWidth <= 768) {
+      popup.style.width = '80vw';
+      popup.style.top = '25vh';
+    } else {
+      popup.style.top = '8vh';
+    }
     popup.style.background = '#000';
     popup.style.border = '2px solid #FF007F';
     popup.style.color = '#FFDD00';
