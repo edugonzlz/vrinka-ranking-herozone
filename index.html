@@ -79,6 +79,19 @@
     line-height: 1.2;
     vertical-align: middle;
   }
+  .sort-button {
+    background: transparent;
+    border: 1px solid var(--c-hi2);
+    color: var(--c-hi2);
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 0.5vw;
+    padding: 0.1em 0.5em;
+    border-radius: 4px;
+    vertical-align: middle;
+    line-height: 1;
+  }
+  .sort-button:hover { background: var(--c-hi2); color: #000; }
   .medal{font-size:clamp(1.2rem, 2.2vw, 2.5rem);}
   .footer{font-size:clamp(1rem, 1.8vw, 2rem);color:var(--c-hi2);margin-top:1vh;}
   .footer button{
@@ -610,7 +623,9 @@ function render(){
   var isMobile = window.innerWidth <= 768;
   var thScore = isMobile ? 'Puntos' : 'Puntuación';
   var thDate  = isMobile ? 'Día' : 'Fecha';
-  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>' + thScore + '</th><th>' + thDate + '</th></tr>';
+  var sortTitle = sortBy === 'scorePerPlayer' ? 'Cambiar a orden por puntuación total' : 'Cambiar a orden por puntos por jugador';
+  var sortButtonHtml = '<button id="sortBtn" class="sort-button" title="' + sortTitle + '">⇅</button>';
+  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>' + thScore + ' ' + sortButtonHtml + '</th><th>' + thDate + '</th></tr>';
 
   for (var rowIdx = 0; rowIdx < 10; rowIdx++) {
     var r = (rowIdx < top10.length) ? top10[rowIdx] : null;
@@ -685,7 +700,15 @@ function rebuildByGame(){
     byGame[gName].push(r);
   });
   Object.keys(byGame).forEach(function(g){
-    byGame[g].sort(function(a,b){ return b.score - a.score; });
+    byGame[g].sort(function(a,b){
+      if (sortBy === 'scorePerPlayer') {
+        var scoreA = (a.playerCount > 0) ? (a.score / a.playerCount) : 0;
+        var scoreB = (b.playerCount > 0) ? (b.score / b.playerCount) : 0;
+        return scoreB - scoreA;
+      }
+      // Default: total score
+      return b.score - a.score;
+    });
   });
 
   // Si el juego actual no está en el rango, añádelo vacío
@@ -727,10 +750,18 @@ fetch('hz-scores.json')
   });
 
 var rankingEl = document.getElementById('ranking');
+rankingEl.addEventListener('click', function(event) {
+  var button = event.target.closest('#sortBtn');
+  if (button) {
+    sortBy = (sortBy === 'totalScore') ? 'scorePerPlayer' : 'totalScore';
+    rebuildByGame();
+  }
+});
 var titleEl   = document.getElementById('title');
 // var progress = document.getElementById('progress');
 var games     = [];
 var idx       = 0;
+var sortBy    = 'totalScore'; // 'totalScore' or 'scorePerPlayer'
 
 /* ==== PROGRESS BAR ANIMATION ==== */
 // startLoop y stopLoop eliminadas
