@@ -752,30 +752,38 @@ fileInput.onchange = function(evt){
 
 document.getElementById('btnSearch').onclick = function(){
   var input = document.getElementById('teamSearch').value.trim();
-  var inputLower = input.toLowerCase();
   if(!input){
     alert("Introduce un nombre de equipo.");
     return;
   }
+  var normalizedInput = input.replace(/\s+/g, ' ').toLowerCase();
 
   var result = [];
   games.forEach(function(pair){
     var game = pair[0];
     var rows = pair[1];
-    var positions = [];
+    var gameResults = [];
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].teamName.trim().toLowerCase() === inputLower) {
-        positions.push(i + 1);
+      var normalizedTeamName = rows[i].teamName.trim().replace(/\s+/g, ' ').toLowerCase();
+      if (normalizedTeamName === normalizedInput) {
+        gameResults.push({
+          position: i + 1,
+          score: rows[i].score
+        });
       }
     }
-    if (positions.length > 0) {
-      result.push(game + ': ' + positions.join(', '));
+    if (gameResults.length > 0) {
+      var gameTitle = '<strong style="text-align:left; display:block;">' + game + '</strong>';
+      var detailsHtml = gameResults.map(function(res) {
+        return '<div style="font-size: 0.9em; text-align: left; padding-left: 1em;">- Puesto ' + res.position + ' (' + res.score.toLocaleString('es-ES') + ' pts)</div>';
+      }).join('');
+      result.push(gameTitle + detailsHtml);
     }
   });
 
   if(result.length){
-    const title = `Posición del equipo "${input.toUpperCase()}"`;
-    const body = result.map(r => `<div>${r}</div>`).join('');
+    const title = `Resultados de "${input.toUpperCase()}"`;
+    const body = result.join('<hr style="border:none; border-top: 1px solid #555; margin: 1vh 0;">');
     // Remove existing popup if present
     var existingPopup = document.getElementById('popupSearchResult');
     if (existingPopup) existingPopup.remove();
