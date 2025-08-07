@@ -74,6 +74,11 @@
     text-align:left;
     padding-left:1vw;
   }
+  /* Ajustes para celdas con sub-información */
+  td:nth-child(2), td:nth-child(3) {
+    line-height: 1.2;
+    vertical-align: middle;
+  }
   .medal{font-size:clamp(1.2rem, 2.2vw, 2.5rem);}
   .footer{font-size:clamp(1rem, 1.8vw, 2rem);color:var(--c-hi2);margin-top:1vh;}
   .footer button{
@@ -167,6 +172,12 @@ table{
   /* Ocultar texto móvil por defecto */
   .mobile-label, .mobile-text {
     display: none;
+  }
+  .sub-info {
+    font-size: 0.65em;
+    opacity: 0.75;
+    line-height: 1;
+    font-weight: normal;
   }
   @media screen and (max-width: 768px) {
     /* Reducir el gap del contenedor superior para móviles */
@@ -614,9 +625,21 @@ function render(){
              : showPos;
     if (r) {
       var isCurrent = highlightLast && (r === lastRecent);
+
+      var playerCountText = '';
+      if (r.playerCount && r.playerCount > 0) {
+        playerCountText = '<div class="sub-info">' + r.playerCount + (r.playerCount === 1 ? ' jugador' : ' jugadores') + '</div>';
+      }
+
+      var scorePerPlayerText = '';
+      if (r.playerCount && r.playerCount > 0) {
+        var scorePerPlayer = Math.round(r.score / r.playerCount);
+        scorePerPlayerText = '<div class="sub-info">' + scorePerPlayer.toLocaleString('es-ES') + ' c/u</div>';
+      }
+
       html += '<tr class="' + (isCurrent ? 'highlight' : '') + '"><td class="medal">' + medal + '</td>' +
-              '<td>' + r.teamName + '</td>' +
-              '<td>' + r.score.toLocaleString("es-ES") + '</td>' +
+              '<td>' + r.teamName + playerCountText + '</td>' +
+              '<td>' + r.score.toLocaleString("es-ES") + scorePerPlayerText + '</td>' +
               '<td>' + r.date.slice(8,10) + '-' + r.date.slice(5,7) + '-' + r.date.slice(2,4) + '</td></tr>';
     } else {
       html += '<tr><td class="medal">' + medal + '</td><td></td><td></td><td></td></tr>';
