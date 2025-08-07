@@ -145,6 +145,12 @@ table{
     color: #000;
     cursor: pointer;
   }
+  /* Corrige la alineación de los controles del reproductor en escritorio */
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 1vw;
+  }
   .control-icon {
     height: 2.5vh;
     object-fit: contain;
@@ -221,7 +227,7 @@ table{
     }
 
     #teamSearch {
-      width: 50vw; /* Ancho del campo de búsqueda */
+      width: 100%; /* El campo de texto ocupa todo el espacio de su contenedor (label) */
     }
 
     /* Nuevas reglas para forzar el layout en móvil */
@@ -232,13 +238,19 @@ table{
       margin-bottom: 2vw;
       align-items: center;
     }
-    #dateSelect {
+    #dateSelect, .search-controls {
       width: 90%;
       margin-left: auto;
       margin-right: auto;
     }
-    .search-controls, .player-controls {
+    .search-controls {
+      justify-content: flex-start; /* Alinea el input y el botón a la izquierda */
+    }
+    .search-controls, .player-controls { /* .player-controls mantiene el centrado de la regla general */
       gap: 2vw;
+    }
+    .search-controls > label {
+      flex-grow: 1; /* El label (contenedor del input) se expande */
     }
     #settingsButton {
       line-height: 1;
