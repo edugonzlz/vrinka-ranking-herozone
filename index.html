@@ -61,7 +61,7 @@
   tr:nth-child(even){background:#222;}
   .highlight{
     background:var(--c-principal) !important;
-    color:#000 !important;
+    color:#fff !important;
     font-weight:700;
   }
   /* Alinear título de la columna Equipo a la izquierda */
@@ -79,19 +79,29 @@
     line-height: 1.2;
     vertical-align: middle;
   }
+  .score-header-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+  }
   .sort-button {
     background: transparent;
     border: 1px solid var(--c-hi2);
     color: var(--c-hi2);
     cursor: pointer;
     font-size: 0.8em;
-    margin-left: 0.5vw;
+    margin-bottom: 0.3em;
     padding: 0.1em 0.5em;
     border-radius: 4px;
-    vertical-align: middle;
     line-height: 1;
   }
   .sort-button:hover { background: var(--c-hi2); color: #000; }
+  .sort-button.active {
+    background: var(--c-hi2);
+    color: #000;
+  }
   .medal{font-size:clamp(1.2rem, 2.2vw, 2.5rem);}
   .footer{font-size:clamp(1rem, 1.8vw, 2rem);color:var(--c-hi2);margin-top:1vh;}
   .footer button{
@@ -242,6 +252,11 @@ table{
       font-size: clamp(2rem, 5vw, 6rem);
     }
 
+    /* Alinear el contenido de la cabecera de puntuación a la derecha en móvil */
+    .score-header-wrapper {
+      align-items: flex-end;
+    }
+
     /* Menú superior: tamaño y consistencia visual en móviles */
     #dateSelect,
     #teamSearch,
@@ -361,11 +376,10 @@ table{
 </head>
 
 <body>
-<div style="width: 100%; background: #000; z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
+<div style="width: 100%; background: var(--c-dark); z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
   <select id="dateSelect">
-    <option value="all">Absoluto</option>
     <option value="today">Hoy</option>
-    <option value="last30" selected>Últimos 30 días</option>
+    <option value="last30">Últimos 30 días</option>
   </select>
   <div class="search-controls">
     <label>
@@ -557,12 +571,20 @@ if (chkHighlight) {
   })();
 
   (function fillYears(){
+    var optAbsoluto = document.createElement('option');
+    optAbsoluto.value = 'all';
+    optAbsoluto.textContent = 'Absoluto';
+    dateSelector.appendChild(optAbsoluto);
+
     var startYear = 2024;
     var currentYear = new Date().getFullYear();
     for(var y = currentYear; y >= startYear; y--){
       var opt = document.createElement('option');
       opt.value = 'year-' + y;      // e.g., year-2025
       opt.textContent = y.toString();
+      if (y === currentYear) {
+        opt.selected = true;
+      }
       dateSelector.appendChild(opt);
     }
   })();
@@ -612,9 +634,17 @@ function render(){
     }
   }
 
+  var lastRecentIsToday = false;
+  if (lastRecent) {
+    var lastDate = parseJSONDate(lastRecent.date);
+    lastRecentIsToday = lastDate.getFullYear() === NOW.getFullYear() &&
+                        lastDate.getMonth() === NOW.getMonth() &&
+                        lastDate.getDate() === NOW.getDate();
+  }
+
   var top10 = rows.slice(0, 10);
 
-  if (highlightLast && lastRecent && top10.indexOf(lastRecent) === -1) {
+  if (highlightLast && lastRecent && lastRecentIsToday && top10.indexOf(lastRecent) === -1) {
     top10.pop();              // elimina el puesto 10 actual
     top10.push(lastRecent);   // añade la última partida
   }
@@ -624,8 +654,10 @@ function render(){
   var thScore = isMobile ? 'Puntos' : 'Puntuación';
   var thDate  = isMobile ? 'Día' : 'Fecha';
   var sortTitle = sortBy === 'scorePerPlayer' ? 'Cambiar a orden por puntuación total' : 'Cambiar a orden por puntos por jugador';
-  var sortButtonHtml = '<button id="sortBtn" class="sort-button" title="' + sortTitle + '">⇅</button>';
-  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>' + thScore + ' ' + sortButtonHtml + '</th><th>' + thDate + '</th></tr>';
+  var sortButtonClass = 'sort-button' + (sortBy === 'scorePerPlayer' ? ' active' : '');
+  var sortButtonHtml = '<button id="sortBtn" class="' + sortButtonClass + '" title="' + sortTitle + '">C/U</button>';
+  var scoreHeaderContent = '<div class="score-header-wrapper">' + sortButtonHtml + '<span>' + thScore + '</span></div>';
+  var html = '<tr><th class="medal">#</th><th>Equipo</th><th>' + scoreHeaderContent + '</th><th>' + thDate + '</th></tr>';
 
   for (var rowIdx = 0; rowIdx < 10; rowIdx++) {
     var r = (rowIdx < top10.length) ? top10[rowIdx] : null;
@@ -639,7 +671,7 @@ function render(){
              : (showPos===3)?'🥉'
              : showPos;
     if (r) {
-      var isCurrent = highlightLast && (r === lastRecent);
+      var isCurrent = highlightLast && (r === lastRecent) && lastRecentIsToday;
 
       var playerCountText = '';
       if (r.playerCount && r.playerCount > 0) {
