@@ -377,10 +377,7 @@ table{
 
 <body>
 <div style="width: 100%; background: var(--c-dark); z-index: 999; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2vw; padding: 1.2vh 1vw 0 1vw; margin-bottom: 2vh;">
-  <select id="dateSelect">
-    <option value="today">Hoy</option>
-    <option value="last30">Últimos 30 días</option>
-  </select>
+  <select id="dateSelect"></select>
   <div class="search-controls">
     <label>
       <input type="text" id="teamSearch" placeholder="Nombre de equipo">
@@ -557,42 +554,50 @@ if (chkHighlight) {
 // var chkHighlight  = document.getElementById('chkHighlight');
 
 
-  (function populateDateFilter(){
-    // 1. Añadir "Absoluto"
-    var optAbsoluto = document.createElement('option');
-    optAbsoluto.value = 'all';
-    optAbsoluto.textContent = 'Absoluto';
-    dateSelector.appendChild(optAbsoluto);
+  (function populateDateFilter() {
+    // Limpia y centraliza la creación de todas las opciones del selector de fecha.
+
+    // Función auxiliar para crear y añadir opciones
+    function createOption(value, text, selected) {
+      var opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = text;
+      if (selected) {
+        opt.selected = true;
+      }
+      dateSelector.appendChild(opt);
+    }
+
+    // 1. Opciones generales
+    if (window === window.top) { // No mostrar "Hoy" si está embebido
+      createOption('today', 'Hoy');
+    }
+    createOption('last30', 'Últimos 30 días');
+    createOption('all', 'Absoluto');
 
     var now = new Date();
-    var startYear = 2024;
+    var startYear = now.getFullYear(); // No mostrar años anteriores
     var currentYear = now.getFullYear();
     var currentMonth = now.getMonth(); // 0-11
 
-    // 2. Recorrer años desde el actual hasta el inicial
-    for(var y = currentYear; y >= startYear; y--){
-      // a. Añadir la opción del año
-      var optYear = document.createElement('option');
-      optYear.value = 'year-' + y;
-      optYear.textContent = y.toString();
-      if (y === currentYear) {
-        optYear.selected = true; // Selección por defecto
-      }
-      dateSelector.appendChild(optYear);
+    // 2. Opciones de años y los últimos 12 meses
+    var monthCount = 0;
+    for (var y = currentYear; y >= startYear; y--) {
+      // a. Opción del año (el actual por defecto)
+      createOption('year-' + y, y.toString(), y === currentYear);
 
-      // b. Determinar el mes de inicio del bucle
+      // b. Opciones de meses
       var startMonth = (y === currentYear) ? currentMonth : 11;
-
-      // c. Recorrer los meses para el año actual `y`
       for (var m = startMonth; m >= 0; m--) {
-        var d = new Date(y, m, 1);
-        var val = d.toISOString().slice(0, 7); // "YYYY-MM"
-        var txt = d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        if (monthCount >= 6) break; // No añadir más de 6 meses
 
-        var optMonth = document.createElement('option');
-        optMonth.value = val;
-        optMonth.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
-        dateSelector.appendChild(optMonth);
+        var d = new Date(y, m, 1);
+        var monthVal = m + 1;
+        var val = y + '-' + (monthVal < 10 ? '0' : '') + monthVal; // "YYYY-MM"
+        var txt = d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+        var capitalizedText = txt.charAt(0).toUpperCase() + txt.slice(1);
+        createOption(val, capitalizedText);
+        monthCount++;
       }
     }
   })();
@@ -616,7 +621,9 @@ function inRange(dateObj){
       return dateObj.getFullYear() === yearSel;
     }
     // filtro por mes YYYY-MM (opciones añadidas por fillMonths)
-    return dateObj.toISOString().slice(0,7) === sel;
+    var year = dateObj.getFullYear();
+    var month = dateObj.getMonth() + 1;
+    return sel === (year + '-' + (month < 10 ? '0' : '') + month);
   }
 
 function parseJSONDate(str){
@@ -814,12 +821,6 @@ if (window !== window.top) {
 
   const options = document.getElementById('settingsButton');
   if (options) options.style.display = 'none';
-
-  // Si está embebida, no mostrar la opción "Hoy"
-  const todayOption = document.querySelector('#dateSelect option[value="today"]');
-  if (todayOption) {
-    todayOption.remove();
-  }
 
   // Evitar scroll vertical en la página embebida
   document.body.style.overflowY = 'hidden';
