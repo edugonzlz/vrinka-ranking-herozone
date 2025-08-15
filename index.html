@@ -557,35 +557,43 @@ if (chkHighlight) {
 // var chkHighlight  = document.getElementById('chkHighlight');
 
 
-  (function fillMonths(){
-    var now = new Date();
-    for(var i=0;i<12;i++){
-      var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-      var val = d.toISOString().slice(0,7);
-      var txt = d.toLocaleString('es-ES',{month:'long',year:'numeric'});
-      var opt = document.createElement('option');
-      opt.value = val;
-      opt.textContent = txt.charAt(0).toUpperCase()+txt.slice(1);
-      dateSelector.appendChild(opt);
-    }
-  })();
-
-  (function fillYears(){
+  (function populateDateFilter(){
+    // 1. Añadir "Absoluto"
     var optAbsoluto = document.createElement('option');
     optAbsoluto.value = 'all';
     optAbsoluto.textContent = 'Absoluto';
     dateSelector.appendChild(optAbsoluto);
 
+    var now = new Date();
     var startYear = 2024;
-    var currentYear = new Date().getFullYear();
+    var currentYear = now.getFullYear();
+    var currentMonth = now.getMonth(); // 0-11
+
+    // 2. Recorrer años desde el actual hasta el inicial
     for(var y = currentYear; y >= startYear; y--){
-      var opt = document.createElement('option');
-      opt.value = 'year-' + y;      // e.g., year-2025
-      opt.textContent = y.toString();
+      // a. Añadir la opción del año
+      var optYear = document.createElement('option');
+      optYear.value = 'year-' + y;
+      optYear.textContent = y.toString();
       if (y === currentYear) {
-        opt.selected = true;
+        optYear.selected = true; // Selección por defecto
       }
-      dateSelector.appendChild(opt);
+      dateSelector.appendChild(optYear);
+
+      // b. Determinar el mes de inicio del bucle
+      var startMonth = (y === currentYear) ? currentMonth : 11;
+
+      // c. Recorrer los meses para el año actual `y`
+      for (var m = startMonth; m >= 0; m--) {
+        var d = new Date(y, m, 1);
+        var val = d.toISOString().slice(0, 7); // "YYYY-MM"
+        var txt = d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+
+        var optMonth = document.createElement('option');
+        optMonth.value = val;
+        optMonth.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
+        dateSelector.appendChild(optMonth);
+      }
     }
   })();
 
