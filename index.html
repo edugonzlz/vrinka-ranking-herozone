@@ -662,6 +662,26 @@
             const modalScores = document.getElementById('modalScores');
             const closeBtn = document.querySelector('.close-btn');
 
+            // Auto-resize: informa la altura real a la página padre (vrinka.com).
+            // Se usa window.top para saltar el contenedor aislado del builder.
+            function sendHeight() {
+                var h = Math.max(
+                    document.documentElement.scrollHeight,
+                    document.body ? document.body.scrollHeight : 0
+                );
+                try {
+                    window.top.postMessage({ type: 'vrinka-ranking-height', height: Math.ceil(h) + 4 }, '*');
+                } catch (err) { /* padre inaccesible: se mantiene altura fija */ }
+            }
+            window.addEventListener('load', sendHeight);
+            window.addEventListener('resize', sendHeight);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(sendHeight);
+            }
+            if ('ResizeObserver' in window) {
+                new ResizeObserver(() => sendHeight()).observe(document.documentElement);
+            }
+
             let allScores = [];
             let currentGame = null;
             let sortByPerPlayer = false; // false = Total Score, true = Score Per Player
@@ -850,6 +870,7 @@
                     });
 
                     rankingBody.classList.remove('fading');
+                    sendHeight();
                 }, 120));
             }
 
