@@ -37,11 +37,12 @@
             font-family: 'Oxanium', sans-serif;
             color: #ffffff;
             margin: 0;
-            padding: 28px 20px 0;
+            padding: 44px 20px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: clip;
             background-color: #0e0e11;
             background-image:
                 radial-gradient(620px 420px at 12% -4%, rgba(255, 0, 127, .26), transparent 62%),
@@ -85,11 +86,14 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--muted);
-            margin: 0 0 6px;
+            margin: 0 auto 12px;
+            max-width: 660px;
+            line-height: 1.8;
+            padding: 0 8px;
         }
 
         h1 {
-            margin: 0 0 12px;
+            margin: 0 0 14px;
             text-align: center;
             font-weight: 800;
             font-style: italic;
@@ -105,11 +109,12 @@
         }
 
         .subtitle {
-            margin: 10px 0 0;
+            margin: 16px 0 0;
             font-size: 11px;
             letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--muted);
+            text-align: center;
         }
 
         /* ============ 5. BARRAS AHUSADAS (firma) ============ */
@@ -122,13 +127,13 @@
         }
         .bar--large {
             height: 14px;
-            margin: 6px 0 18px;
+            margin: 12px 0 28px;
             clip-path: polygon(0 0, 100% 0, 100% 4px, 0 100%);
             filter: drop-shadow(0 0 10px rgba(255, 0, 127, .45));
         }
         .bar--small {
             height: 9px;
-            margin: 16px 0;
+            margin: 18px 0 20px;
             clip-path: polygon(0 0, 100% 0, 100% 3px, 0 100%);
             filter: drop-shadow(0 0 8px rgba(255, 0, 127, .35));
             opacity: .9;
@@ -138,20 +143,20 @@
         .controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 16px;
             justify-content: center;
             align-items: center;
             width: 100%;
-            margin-bottom: 4px;
+            margin-bottom: 10px;
         }
 
         .game-selector {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
             background: rgba(0, 0, 0, .45);
-            padding: 10px;
+            padding: 14px 16px;
             border-radius: 999px;
             border: 1px solid var(--line);
         }
@@ -160,7 +165,7 @@
             background: rgba(255, 255, 255, .04);
             border: 1px solid var(--line);
             color: #d7d7e0;
-            padding: 8px 18px;
+            padding: 10px 22px;
             border-radius: 999px;
             cursor: pointer;
             font-family: 'Oxanium', sans-serif;
@@ -529,7 +534,27 @@
         }
 
         @media (max-width: 640px) {
-            body { padding: 20px 12px 0; }
+            body { padding: 30px 14px 0; }
+            h1 { letter-spacing: 1px; }
+            .tagline { font-size: 10px; padding: 0 4px; }
+            .bar--large { margin: 8px 0 22px; }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 14px;
+            }
+            .game-selector {
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                overflow-x: auto;
+                border-radius: 18px;
+                padding: 12px;
+                max-width: 100%;
+                scrollbar-width: thin;
+            }
+            .game-btn { flex: 0 0 auto; }
+            .sort-toggle { width: 100%; }
+            .search-container { max-width: none; }
             .ranking-container { padding: 14px 10px; }
             tbody tr {
                 grid-template-columns: 64px 1fr;
@@ -542,7 +567,20 @@
             .team-col { grid-area: team; min-width: 0; }
             .score-col { grid-area: score; text-align: left; }
             .team-name { white-space: normal; }
-            .game-selector { border-radius: 18px; }
+            .bottom-band { margin-top: 22px; }
+            .bottom-band-inner {
+                flex-direction: column;
+                gap: 10px;
+                padding: 18px 14px;
+            }
+            .brand-slot { font-size: .8rem; }
+            .date-chip {
+                white-space: normal;
+                text-align: center;
+                font-size: .72rem;
+                line-height: 1.6;
+                max-width: 100%;
+            }
         }
     </style>
 </head>
